@@ -1,4 +1,3 @@
-# import torch
 import torch
 from torch import nn
 import numpy as np
@@ -89,12 +88,69 @@ class GAL:
 	
 	def embed_gnn(self, gnn_model):
 		return gnn_model.embed(self.D_samples, self.E_gnn)[self.gnn_labeled_index]
-
-	def unceartinty_score(self, G):
-		return nx.pagerank(G)
+	
+	def heterogeneous_edge_influence(graph, node_labels, label_diversity_weight=0.5):
+		"""
+		Calculate the influence score for each node based on connections to labeled nodes and label diversity.
+		
+		:param graph: The networkx graph.
+		:param node_labels: Dictionary of node IDs and their labels.
+		:param label_diversity_weight: The weight to assign to label diversity in the final score.
+		
+		:return: A dictionary of influence scores for each node.
+		"""
+		influence_scores = defaultdict(float)
+		
+		for node in graph.nodes:
+			if node in node_labels:
+				continue  # Skip labeled nodes, focus on unlabeled ones
+			
+			# Get neighbors and their labels
+			neighbors = list(graph.neighbors(node))
+			labeled_neighbors = [neighbor for neighbor in neighbors if neighbor in node_labels]
+			
+			# Count how many labeled nodes it's connected to
+			num_labeled_neighbors = len(labeled_neighbors)
+			
+			# Measure label diversity
+			label_count = defaultdict(int)
+			for neighbor in labeled_neighbors:
+				label = node_labels[neighbor]
+				label_count[label] += 1
+			
+			# Calculate diversity as the number of unique labels connected to this node
+			label_diversity = len(label_count)
+			
+			# Combine influence score based on connection count and label diversity
+			influence_score = (1 - label_diversity_weight) * num_labeled_neighbors + label_diversity_weight * label_diversity
+			
+			influence_scores[node] = influence_score
+		
+		return influence_scores
+	
+	def entropy(self, X, model):
+		if not isinstance(X, torch.Tensor):
+			X = torch.Tensor(X)
+		ENT = (X * torch.log2(X)).sum(dim=-1)
+		ENT = ((ENT - ENT.min()) / (ENT.max() - ENT.min())).numpy()
+		return dict(zip(range(len(X)), entropy(model.predict_proba(X))))
+	
+	def sum_dicts(self, a, b):
+		s = {}
+		for k in a.keys():
+			s[k] = a[k] + b.get(k, 0) 
+		return s
+	
+	def uncertainty_score(self, G, model):
+		try:
+			return self.sum_dicts(nx.pagerank(G), self.entropy(self.available_pool_samples, model))
+		except:
+			print('error uncertainty metric')
+			return nx.eigenvector_centrality(G)
+		# return nx.pagerank(G)
 	
 	def select_points(self, G, model):
-		R = self.unceartinty_score(G)
+		R = self.uncertainty_score(G, model)
 		return sorted(R, key=lambda x: R[x], reverse=True)[:self.budget_per_iter]
 	
 	
@@ -179,7 +235,8 @@ class GALClassifier:
 		else:
 			model_pred = torch.Tensor(self.model.predict_proba(x))
 		
-		x = gnn_pred + model_pred
+		# x = gnn_pred + model_pred
+		x = torch.maximum(gnn_pred, model_pred)
 		return F.softmax(x, dim=-1)
 		# x = torch.cat([gnn_pred, model_pred], axis=1).type(torch.float)
 		# return self.classifier(x)
@@ -293,7 +350,7 @@ def generate_plot(accuracy_scores_dict):
 class GNN(nn.Module):
 	def __init__(self, in_dim, embed_dim, out_dim):
 		super(GNN, self).__init__()
-		self.gnn = gnn.GATConv(in_dim, embed_dim, aggr='mean')
+		self.gnn = gnn.SAGEConv(in_dim, embed_dim, aggr='mean')
 		self.classifier = Classifier(embed_dim, out_dim)
 
 	def forward(self, x, edge_index):
