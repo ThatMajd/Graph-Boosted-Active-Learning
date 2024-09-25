@@ -15,6 +15,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 import torch_geometric.nn as gnn
 from torch import optim 
 import torch.nn.functional as F
+from sklearn.cluster import KMeans
 
 class GAL:
 	def __init__(self,
@@ -43,6 +44,7 @@ class GAL:
 		self.gnn_class = gnn_class
 		# self.graph_maker = graph_maker
 		self.thresh = thresh if thresh is not None else .8
+		self.kmeans = KMeans(n_clusters=out_dim)
 
 		# self.sim_metric = lambda x: pairwise_distances(x, x)
 		self.sim_metric = GAL.cosine_sim_metric
@@ -58,6 +60,7 @@ class GAL:
 		self.D_labels = torch.tensor(self.D_labels)
 		self.gnn_emb_dim = gnn_emb_dim
 		self.out_dim = out_dim
+		self.AL_iterations = 1
 
 
 		# assert callable(self.classifier_class), 'classifier_class should be callable.'
@@ -78,13 +81,13 @@ class GAL:
 	def construct_edges(self, A):
 		return np.vstack(np.where(A > self.thresh))
 
-	def construct_graph(self, A, nodes):
+	def construct_graph(self, A, V):
 		E = self.construct_edges(A)
 
 		G = nx.Graph()
-		G.add_nodes_from(range(len(nodes)))
+		G.add_nodes_from(range(len(V)))
 		G.add_edges_from(zip(*E))
-		return G
+		return G, V, E
 	
 	def embed_gnn(self, gnn_model):
 		return gnn_model.embed(self.D_samples, self.E_gnn)[self.gnn_labeled_index]
@@ -131,26 +134,71 @@ class GAL:
 	def entropy(self, X, model):
 		if not isinstance(X, torch.Tensor):
 			X = torch.Tensor(X)
-		ENT = (X * torch.log2(X)).sum(dim=-1)
-		ENT = ((ENT - ENT.min()) / (ENT.max() - ENT.min())).numpy()
-		return dict(zip(range(len(X)), entropy(model.predict_proba(X))))
+		# ENT = (X * torch.log2(X)).sum(dim=-1)
+		# ENT = ((ENT - ENT.min()) / (ENT.max() - ENT.min())).numpy()
+		return dict(zip(range(len(X)), entropy(model.predict_proba(X), axis=-1)))
 	
-	def sum_dicts(self, a, b):
+	def sum_dicts(self, *dicts, coef=None):
+		if coef is None:
+			coef = [1 / len(dicts)] * len(dicts)
+
 		s = {}
-		for k in a.keys():
-			s[k] = a[k] + b.get(k, 0) 
+		for k in dicts[0].keys():
+			# s[k] = a[k] + b.get(k, 0)
+			s[k] = sum([coef[i] * e.get(k, 0) for i, e in enumerate(dicts)])
 		return s
 	
-	def uncertainty_score(self, G, model):
+	def density_score(self, X: torch.Tensor, keepdims=False):
+		"""
+		applying the density score function in the paper `Active Learning for Graph Embedding`
+		:math:`$\phi_{density}(v_i) = \\frac{1}{1 + ED(Emb_{v_i}, CC_{v_i})}$`
+
+		Args:
+			X (torch.Tensor): the input data of shape [n_samples, data_dim].
+			keepdims (bool): flag whether the original shape of the data wants to be preserved or not.
+
+		Returns:
+			density_scores (dict): a dictionary of the scores such that the keys are the node id and value is the score.
+		"""
+		self.kmeans = self.kmeans.fit(X)
+		density_scores = self.kmeans.transform(X).min(axis=-1, keepdims=keepdims)
+		density_scores = 1 / (1 + density_scores)
+		return dict(zip(range(len(X)), density_scores))
+	
+	def uncertainty_score(self, G, V, E, model, gnn_model):
+		"""
+		this score is based on the objective function of the paper `Active Learning for Graph Embedding`,
+		which is defined as follows:
+			:math:`\\alpha \\cdot P_{entropy}(v, U) + \\beta \\cdot P_{density}(v, U) + \\gamma \\cdot P_{centrality}(v, U)`
+			s.t. \\alpha, \\beta, \\gamma are time-sensitive random variables from the distributions Beta(1, 1/n), Beta(1, 1/n), Beta(1, n) respectively.
+			n is the current iteration of the AL algorithm.
+
+		Args:
+			G (_type_): _description_
+			model (_type_): _description_
+
+		Returns:
+			_type_: _description_
+		"""
 		try:
-			return self.sum_dicts(nx.pagerank(G), self.entropy(self.available_pool_samples, model))
+			density_input = gnn_model.embed(torch.Tensor(V), torch.tensor(E))
+			density_input = density_input.detach().cpu().numpy()
+			coef_vector = np.random.beta(1, [1. / self.AL_iterations, 1. / self.AL_iterations, self.AL_iterations], size=(3))
+			coef_vector = coef_vector / coef_vector.sum()
+
+			return self.sum_dicts(
+				self.entropy(V, model),
+				self.density_score(density_input),
+				nx.pagerank(G),
+				coef=[*coef_vector])
+			# return self.sum_dicts(nx.pagerank(G), self.entropy(V, model))
 		except:
 			print('error uncertainty metric')
 			return nx.eigenvector_centrality(G)
 		# return nx.pagerank(G)
 	
-	def select_points(self, G, model):
-		R = self.uncertainty_score(G, model)
+	def select_points(self, G, V, E, model, gnn_model):
+		R = self.uncertainty_score(G, V, E, model, gnn_model)
 		return sorted(R, key=lambda x: R[x], reverse=True)[:self.budget_per_iter]
 	
 	
@@ -191,6 +239,7 @@ class GAL:
 		accuracy_scores = []
 		E_test = self.construct_edges(self.sim_mat(self.test_samples))
 		E_test = torch.tensor(E_test)
+		self.AL_iterations = 1
 
 		for iteration in range(self.iterations):
 			assert len(self.train_samples) < self.train_limit, f'The train set is larger than {self.train_limit} samples'
@@ -200,8 +249,8 @@ class GAL:
 
 
 			A = self.sim_mat(self.train_samples)
-			G = self.construct_graph(A, self.available_pool_samples)
-			U_idx = self.select_points(G, model)
+			G, V, E = self.construct_graph(A, self.available_pool_samples)
+			U_idx = self.select_points(G, V, E, model, gnn_model)
 			self.label_update(U_idx)
 			# L_gnn = self.embed_gnn(gnn_model)
 			gal = GALClassifier(gnn_model, model, Classifier(2 * self.out_dim, self.out_dim))
@@ -210,6 +259,8 @@ class GAL:
 			accuracy_scores.append(accuracy)
 			print(f'Accuracy: {accuracy}')
 			print('-' * len(print_str))
+			self.AL_iterations += 1
+
 		return accuracy_scores
 	
 	def _evaluate_model(self, trained_model, E_test):
