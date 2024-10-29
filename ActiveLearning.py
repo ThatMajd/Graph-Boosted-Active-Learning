@@ -80,7 +80,7 @@ class GAL:
 	
 	def construct_edges(self, A):
 		return np.vstack(np.where(A > self.thresh))
-
+	
 	def construct_graph(self, A, V):
 		E = self.construct_edges(A)
 
@@ -186,12 +186,14 @@ class GAL:
 			coef_vector = np.random.beta(1, [1. / self.AL_iterations, 1. / self.AL_iterations, self.AL_iterations], size=(3))
 			coef_vector = coef_vector / coef_vector.sum()
 
-			return self.sum_dicts(
-				self.entropy(V, model),
-				self.density_score(density_input),
-				nx.pagerank(G),
-				coef=[*coef_vector])
+			# return self.sum_dicts(
+			# 	self.entropy(V, model),
+			# 	self.density_score(density_input),
+			# 	nx.pagerank(G),
+			# 	coef=[*coef_vector])
+
 			# return self.sum_dicts(nx.pagerank(G), self.entropy(V, model))
+			return nx.eigenvector_centrality(G)  # Good uncertainty ~.703
 		except:
 			print('error uncertainty metric')
 			return nx.eigenvector_centrality(G)
@@ -342,7 +344,7 @@ class ActiveLearningPipeline:
 		return np.random.choice(range(self.available_pool_samples.shape[0]), self.budget_per_iter)
 
 	def _custom_sampling(self, trained_model):
-		# TODO: Implement the custom samplingR
+		# TODO: Implement the custom sampling
 		
 		# # entropy
 		probabilities = trained_model.predict_proba(self.available_pool_samples)
@@ -385,6 +387,7 @@ class ActiveLearningPipeline:
 		preds = trained_model.predict(self.test_samples)
 		return round(np.mean(preds == self.test_labels), 3)
 
+
 def generate_plot(accuracy_scores_dict):
 	"""
 	Generates a plot
@@ -397,6 +400,7 @@ def generate_plot(accuracy_scores_dict):
 	plt.xticks(range(1, len(accuracy_scores) + 1))
 	plt.legend()
 	plt.show()
+
 
 class GNN(nn.Module):
 	def __init__(self, in_dim, embed_dim, out_dim):
@@ -414,6 +418,7 @@ class GNN(nn.Module):
 	def predict(self, x):
 		return self.classifier(x)
 
+
 class Classifier(nn.Module):
 	def __init__(self, in_dim=2, out_dim=3):
 		super(Classifier, self).__init__()
@@ -427,7 +432,6 @@ class Classifier(nn.Module):
 		)
 
 		self.softmax = nn.Softmax(dim=-1)
-
 
 	def forward(self, x):
 		return self.model(x)
