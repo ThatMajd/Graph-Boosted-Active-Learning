@@ -17,4 +17,4 @@ class Similarity:
 		self.metric = metric
 
 	def __call__(self, X):
-		return torch.Tensor(pairwise_distances(X, X, metric=self.metric))
+		return torch.Tensor(pairwise_distances(X, X, metric=self.metric)).fill_diagonal_(float('inf'))
