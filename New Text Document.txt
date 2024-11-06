@@ -1,0 +1,202 @@
+% This must be in the first 5 lines to tell arXiv to use pdfLaTeX, which is strongly recommended.
+\pdfoutput=1
+% In particular, the hyperref package requires pdfLaTeX in order to break URLs across lines.
+
+\documentclass[10pt]{article}
+
+% Remove the "review" option to generate the final version.
+% \usepackage{ACL2023}
+\usepackage[review]{ACL2023}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{graphicx}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsfonts}
+\usepackage{float}
+\usepackage{placeins}  % for \FloatBarrier
+\usepackage{amsmath}
+
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out.
+% However, it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+% This is also not strictly necessary, and may be commented out.
+% However, it will improve the aesthetics of text in
+% the typewriter font.
+\usepackage{inconsolata}
+
+
+% If the title and author information does not fit in the area allocated, uncomment the following
+%
+%\setlength\titlebox{<dim>}
+%
+% and set <dim> to something 5cm or larger.
+
+\title{Active learning featuring GNNs}
+
+\author{Saleem Kheralden \\
+  @ Technion \\
+  \texttt{\{khsaleem} \\\And
+  Majd Bishara \\
+  @ Technion \\
+  \texttt{majedbishara} \\ \\\And
+  Lana Haj \\
+  @ Technion \\
+  \texttt{lanahaj\}@campus.technion.ac.il} \\}
+
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Active learning is a method to train a model effectively on a data that's not easy to label, in order to train the model the method utilizes uncertainty metrics with the goal to select points which would have the most contribution to the training process, with entropy uncertainty metric is the most known of those metrics, while this method of training effective and efficient, it selects points based on the output of the trained model without taking into account the distribution of the data, to address this issue we present a new improved AL method, where we utilize the data distribution as well using GNNs and converting the data into graph.
+
+% In this paper, we aim to improve the prediction mechanism for human decision-making in non-cooperative game settings characterized by natural language interactions. Building on the work of \cite{shapira2024human}, we achieved higher accuracy by employing advanced model architectures, notably integrating attention mechanisms that mimic human decision-making processes. Specifically, we tested four different architectures and discovered that the Bidirectional LSTM with an attention layer achieved an impressive accuracy of approximately 98\%. However, due to suspicions of potential data leakage, we decided to exclude these results from our final considerations. Our findings provide a robust basis for future research in human decision prediction using language models.
+\end{abstract}
+
+\section{Introduction}
+Active Learning (AL) is a method to train a model effectively on a data that's not easy to label, in order to train the model the method utilizes uncertainty metrics with the goal to select points which would have the most contribution to the training process, while this method proved that it's effective and yielded great results, we think that we can improve upon this method to yield even better performance on tabular data, that is by improving the selection scheme, and adding another layer of complication on this method, we will tackle the selection problem by converting the tabular data into graphs and utilize their centrality metrics, and the complication that we intend to add is GNNs, since we're already gonna work with graphs, we will test different GNN models in order to classify the labeled nodes. \\
+Graph Neural Networks (GNNs) have gained massive momentum in the last few years, and achieved remarkable success in various tasks, either node, edge or graph classification. GNNs are well known for capturing semantic relations between one node and it's neighbors by propagating the neighbors messages to the current node, making those models well suited for embedding and classifying graphical data. \\
+In this paper, we propose a new way to perform Active Learning using GNNs.
+Our scheme will work as follows, given tabular data, the first step is to construct a graph of all the data (labeled and unlabeled points) such that the nodes are the data points and edges are constructed based on similarity metric $f$, then the graph nodes will be embedded using GNN model which then embeddings of the labeled data will be passed on to train the classification head of the GNN, in parallel the unlabeled data will be converted into a graph and using centrality metrics $\phi$, a subset of the nodes will be selected for labeling, which then the main classification model will be trained on, which then we'll be back to the first step where we construct the graph on the unlabeled data.
+
+
+% The research presented in the original paper has significantly enriched comprehension and prospects for deciphering human decision-making within non-cooperative game settings, especially those characterized by natural language interactions. This study addresses the same challenge outlined in the original work, namely, forecasting human decision-making dynamics within non-cooperative contexts primarily governed by linguistic persuasion. However, we restrict our investigation to the examination of the model architecture employed for analyzing verbal cues.
+
+% Recent advances in Large Language Models (LLMs) have spurred interest in designing LLM-based agents for tasks that involve interaction with human and artificial agents. This paper improves upon the prediction mechanism suggested in the original paper, focusing on architectural enhancements to achieve better accuracy.
+
+% Attention mechanisms, as introduced in "Attention is All You Need" \cite{vaswani2017attention}, have proven to be highly effective in various NLP tasks. Attention mechanisms mimic human decision-making processes by focusing on relevant parts of the input sequence, thus enabling the model to weigh the importance of different features dynamically. This study explores architectures such as Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU), both integrated with attention layers, to enhance the prediction accuracy of human decision-making in language-based persuasion games.
+
+\section{Methodology}
+Let $D = (L, U) \in \mathbb{R}^{n \times m}$ be the data matrix, such that $L$ is the labeled data, $U$ the unlabeled data, $f$ be the similarity metric (cosine similarity for example), and $M$ is the initial model trained on $L$. \\
+Let $\mathcal{A}$ be the affinity matrix $\forall i, j \in [n], \: \mathcal{A}_{i, j} = f(D_i, D_j)$, and $\mathcal{A}^{U}, \mathcal{A}^{L}$ be the sub-matrices that corresponds to $L, U$ respectively, $\delta$ be a hyper-parameter for similarity threshold, $\phi$ is the uncertainty metric that takes index $i$, graph $\mathcal{G}$ and model $M$ and returns the uncertainty score of point $d_i$.
+% AL: train -> predict -> select -> update  
+% GAL: train -> select -> update
+% \setlength{\textfloatsep}{0pt}
+\begin{algorithm}
+\caption{GNN Active Learning}\label{alg:cap}
+\begin{algorithmic}[1]
+\Function { construct\_graph }{$\mathcal{A}$}
+    \State { $E \gets \{ (d_i, d_j) \; : \; \mathcal{A}_{i, j} > \delta \}$ }
+    \State {\Return graph $\mathcal{G}(D, E)$ }
+\EndFunction
+\\
+\Function { embed\_gnn }{$X, \mathcal{G}$}
+    \State { $X_{GNN} \gets$ embed X using GNN on $\mathcal{G}$}
+    \State {\Return $X_{GNN}$}
+\EndFunction
+\\
+\Function { label\_update }{$\mathcal{O}, L, U, U_q$}
+    \State {$L_q \gets \mathcal{O}.label(U_q)$}
+    \State {$L \gets L \cup L_q$}
+    \State {$U \gets U \ \textbackslash \ L_q$}
+    \State {\Return $L, U$}
+\EndFunction
+\\
+\Function {train\_model}{$L, L_{GNN}$}
+    \State {Let $\bigoplus$ be aggregation function}
+    \State {$L \gets \bigoplus(L, L_{GNN})$}
+    \State{\Return $M.fit(L)$}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\setcounter{algorithm}{0}
+\begin{algorithm}
+\caption{GNN Active Learning (Continued)}\label{alg:cap}
+\begin{algorithmic}[1]
+\\
+\Function { run\_pipeline }{$D$}
+    \For {$iter \gets \{1, \dots, iterations\}$}
+        \State {$\mathcal{G}^{U} \gets$ construct\_graph($\mathcal{A}^{U}$)}
+        \State {$U_q \gets k$ points with lowest $\phi(i, \mathcal{G}^{U}, M)$}
+        \State {$L, U \gets label\_update(\mathcal{O}, L, U, U_q)$}
+        \State {$L_{GNN} \gets embed\_gnn(L, \mathcal{G})$}
+        \State {$M \gets $ train\_model($L, L_{GNN}$)}
+    \EndFor
+    \State {\Return $M$}
+    
+    % \State {winner $\gets NIL$}
+    % \State {Compare head-to-head matchups between candidates.}
+    
+    % \For {each vote v $\in$ profile}
+    %     \State {compare the first preference candidate to every other candidate and increment the corresponding cell in the matrix for the winning candidate.}
+    % \EndFor
+    
+    % \If {there's only one candidate $c$ with more wins than losses in their row of the matrix}
+    %     \State { \Return $c$ }
+    % \EndIf
+    % \Return NIL
+\EndFunction
+\\
+\State{RUN\_PIPELINE($D$)}
+\end{algorithmic}
+\end{algorithm}
+\FloatBarrier
+
+\section{Results}
+\section{Discussion}
+\section{References}
+
+\section{Related Work}
+
+% Research in predicting human decision-making has a rich history, particularly within the context of non-cooperative games and natural language interactions. The study by \cite{shapira2024human} laid the foundation by introducing a method to forecast human decisions using machine learning models. Their work utilized LSTM and Transformer models, establishing a benchmark for subsequent research.
+
+% The use of LSTM networks for sequence modeling in NLP tasks is well-documented \cite{wang2015learning}. LSTM models have demonstrated superior performance in capturing long-range dependencies in sequential data, making them a natural choice for tasks involving temporal patterns. GRU models, proposed by \cite{salem2022gated}, offer a simpler alternative to LSTMs while retaining comparable performance.
+
+% Attention mechanisms, popularized by the Transformer architecture \cite{vaswani2017attention}, have revolutionized NLP by allowing models to focus on specific parts of the input sequence. This mechanism has been instrumental in improving performance across various tasks, including machine translation \cite{luong2015effective}, text summarization \cite{hanunggul2019impact}, and dialogue systems \cite{madotto2020attention}.
+
+% In the context of reinforcement learning, simulation-based approaches have been extensively explored to model human interactions. The work by \cite{tesauro1991practical} on TD-Gammon demonstrated the potential of reinforcement learning in complex decision-making tasks. More recently, \cite{vacaro2019sim} highlighted the use of simulations in training autonomous systems, underscoring the relevance of this approach in our research.
+
+% Our study builds on these foundational works by integrating attention mechanisms with recurrent neural networks to improve the prediction accuracy of human decisions in non-cooperative game settings. By leveraging advancements in both LLMs and attention-based models, we aim to push the boundaries of current methodologies.
+
+\section{Model}
+
+% The architectural frameworks explored in this study were based on the foundational design of the SpecialLSTM architecture, with the incorporation of additional layers to enhance performance. After thorough evaluation and testing, the final configurations chosen were as follows: an LSTM integrated with an attention layer, a GRU combined with an attention layer, a Bidirectional LSTM equipped with an attention layer, and a standard Bidirectional LSTM without the attention mechanism \cite{vaswani2017attention}.
+
+\section{Data}
+
+% In this research, we continue the work of the previous study \cite{shapira2024human} by utilizing the same data without any modifications. The original research employed simulation ideas that have been prominently used in machine learning, particularly in modeling human-human and human-machine interactions, such as in Reinforcement Learning (RL), where data collection can be costly and labor-intensive \cite{tesauro1991practical}. Notable applications of RL include robotics \cite{vacaro2019sim} and autonomous cars.
+
+% Our work continues the novel approach of integrating interaction data with simulation data. By doing so, we follow in the footsteps of various works across diverse domains, such as NLP, autonomous cars, and astro-particle physics, as previously mentioned. One of the challenges in simulation-based learning is the potential mismatch between the simulation and the real world, which can result in suboptimal performance when models are deployed in their target environments. This challenge is addressed by basing our simulations on a Decision-Making (DM) model. The core concept of this DM model is that it learns to make optimal decisions over time, independent of any specific bot or game. We demonstrate the effectiveness of our simulation approach within an economic context, specifically through language-based non-cooperative games.
+
+\section{Experiments and Results}
+
+% In the original paper \cite{shapira2024human}, the LSTM and Transformer models demonstrated optimal performance with a simulation ratio (\( S_e \)) of 4.0. Building upon this finding, we adopted the same simulation ratio for our experiments. Our goal was to identify architectures that could surpass the results reported for these models.
+
+% Initially, we replicated the experiments from the aforementioned paper to establish a baseline accuracy score. Subsequently, we evaluated the performance of the four architectures detailed in the Model section: LSTM with an attention layer, GRU with an attention layer, Bidirectional LSTM with an attention layer, and Bidirectional LSTM.
+
+% Our experiments yielded results comparable to those reported in the original paper for most models. However, two models—Bidirectional LSTM with an attention layer and Bidirectional LSTM without an attention layer—achieved significantly higher accuracy, approximately 98\%. Due to suspicions of potential data leakage in these models, we decided to exclude these results from our final considerations.
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\linewidth]{accuracy_output.png}
+%     \caption{Comparison of Model Accuracy: This graph shows the accuracy of four different models: LSTM, BiLSTM, BiLSTM with Attention and GRU.}
+%     \label{fig:model-accuracy}
+% \end{figure}
+
+% Entries for the entire Anthology, followed by custom entries
+\bibliography{custom}
+\bibliographystyle{acl_natbib}
+
+% \appendix
+
+% \section{Example Appendix}
+% \label{sec:appendix}
+
+% This is a section in the appendix.
+
+\end{document}

@@ -440,4 +440,3 @@ class Classifier(nn.Module):
 		return self.softmax(self.model(x))
 
 
-
