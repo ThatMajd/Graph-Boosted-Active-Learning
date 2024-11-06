@@ -2,25 +2,25 @@ from scipy.stats import entropy
 import networkx as nx
 
 class Uncertainty:
-	def __init__(self, type: str):
+	def __init__(self, _type: str):
 		"""
 
 		Args:
 			type (str): type of uncertainty, should be one of the following: ('entropy', 'entropy_e', 'density')
 			such that type='entropy' calculates the entropy on the passed arg X, while type='entropy_e' 
 		"""
-		self.__nx_flag = hasattr(nx, type) and callable(eval(f'nx.{type}'))
+		self.__nx_flag = hasattr(nx, _type) and callable(eval(f'nx.{_type}'))
 		__m = ('entropy', 'entropy_e', 'density')
 		
 		if not self.__nx_flag:
-			assert type in __m, f'type should be one of the following: {", ".join(__m)}'
+			assert _type in __m, f'type should be one of the following: {", ".join(__m)}'
 
-		self.type = type
+		self._type = _type
 
 	def __call__(self, X, **kwargs):
 		if self.__nx_flag:
 			return self.__nx(X, **kwargs)
-		return eval(f'__{self.type}')(X, **kwargs)
+		return eval(f'__{self._type}')(X, **kwargs)
 	
 	def __entropy(self, X, **kwargs):
 		return dict(zip(range(len(X)), entropy(X, axis=-1)))
@@ -52,7 +52,7 @@ class Uncertainty:
 		return dict(zip(range(len(X)), density_scores))
 	
 	def __nx(self, G, **kwargs):
-		return eval(f'nx.{self.type}')(G)
+		return eval(f'nx.{self._type}')(G)
 
 
 
