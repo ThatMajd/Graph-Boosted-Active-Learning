@@ -1,23 +1,64 @@
 from utils.Uncertainty import Uncertainty
 from torch.utils.data import Dataset
+from GraphBuilder import GraphBuilder
+import networkx as nx
 import torch
 
 class SelectionCriterion:
-    def __init__(self, criterions_dep: dict, budget_per_iter, weighted=False):
+    def __init__(self, criterions: list, budget_per_iter, weighted=False, **kwargs):
         """
         criterions_dep = 
         {
             "entropy": {"model": model},
-            "pagerank": {"graph": G}
+            "pagerank": {"graph": G},
+            "density": {}
         }
         """
+        model = kwargs["model"]
+        metric = kwargs["metric"]
+        threshold = kwargs.get("threshold")
+
+        self.criterions_dep = {
+            "entropy": {"model": kwargs["model"]},
+            "nx": {"graph": None},
+            "density": {},
+        }
+
+
         self.budget_per_iter = budget_per_iter
         self.weighted = weighted
-        self.crit_dicts = {crit: (Uncertainty(crit), criterions_dep[crit]) for crit in criterions_dep.keys()}
-    
+
+        self.graph_builder = GraphBuilder(metric=metric, threshold=threshold)
+        self.model = model
+
+        self.crit_dicts = dict()
+
+        for crit in criterions:
+            print(crit)
+            # if self.__nx_func(crit):
+            #     self.crit_dicts[crit] = {crit: (Uncertainty(crit))
+                                             
+            self.crit_dicts[crit] = {crit: (Uncertainty(crit), self.criterions_dep[crit]) if not self.__nx_func(crit) else (Uncertainty(crit), self.criterions_dep["nx"])}
+
+    def __nx_func(self, func_str):
+        return hasattr(nx, func_str) and callable(eval(f'nx.{func_str}'))
+
+
+    def update_graph(self, G: nx.Graph):
+        if "nx" in self.criterions_dep:
+            self.criterions_dep["nx"]["graph"] = G
+
 
     def select(self, unlabeled: Dataset, labeled: Dataset, iteration: int = 0):
+
+        # TODO
+        # CHECK THIS SHIT
+        _, G = self.graph_builder(unlabeled, )
+
+        self.update_deps(G)
+
         self.crit_scores = self._calc_crits(unlabeled, labeled)
+
 
         if self.weighted:
             # TODO
@@ -26,7 +67,7 @@ class SelectionCriterion:
         else:
             weights = len(self.crit_dicts) * [1]
 
-        final_scores = self.sum_dicts(*self.crit_dicts, coef=weights)
+        final_scores = self.sum_dicts(*self.crit_scores, coef=weights)
         return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
 
 
