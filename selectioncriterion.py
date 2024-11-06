@@ -1,96 +1,71 @@
 from utils.Uncertainty import Uncertainty
-from torch.utils.data import Dataset
 from GraphBuilder import GraphBuilder
+from torch.utils.data import Dataset
 import networkx as nx
+import numpy as np
 import torch
 
 class SelectionCriterion:
-    def __init__(self, criterions: list, budget_per_iter, weighted=False, **kwargs):
-        """
-        criterions_dep = 
-        {
-            "entropy": {"model": model},
-            "pagerank": {"graph": G},
-            "density": {}
-        }
-        """
-        model = kwargs["model"]
-        metric = kwargs["metric"]
-        threshold = kwargs.get("threshold")
+	def __init__(self,
+				 *criterions,
+				 budget_per_iter,
+				 weighted=False,
+				 similarity_metric='cosine',
+				 threshold=.8,
+				 model=None,
+				 **kwargs):
 
-        self.criterions_dep = {
-            "entropy": {"model": kwargs["model"]},
-            "nx": {"graph": None},
-            "density": {},
-        }
+		self.budget_per_iter = budget_per_iter
+		self.weighted = weighted
 
+		self.graph_builder = GraphBuilder(similarity_metric=similarity_metric, threshold=threshold)
 
-        self.budget_per_iter = budget_per_iter
-        self.weighted = weighted
+		# select params
+		self.model = model
+		self.G = kwargs.get('G')
 
-        self.graph_builder = GraphBuilder(metric=metric, threshold=threshold)
-        self.model = model
+		self.uncertainty_dicts = dict()
 
-        self.crit_dicts = dict()
+		for crit_type in criterions:
+			print(crit_type)
+			self.uncertainty_dicts[crit_type] = Uncertainty(crit_type)
 
-        for crit in criterions:
-            print(crit)
-            # if self.__nx_func(crit):
-            #     self.crit_dicts[crit] = {crit: (Uncertainty(crit))
-                                             
-            self.crit_dicts[crit] = (Uncertainty(crit), self.criterions_dep[crit]) if not self.__nx_func(crit) else (Uncertainty(crit), self.criterions_dep["nx"])
+	def __nx_attr(self, func):
+		return hasattr(nx, func) and callable(eval(f'nx.{func}'))
 
-    def __nx_func(self, func_str):
-        return hasattr(nx, func_str) and callable(eval(f'nx.{func_str}'))
+	def select(self, unlabeled: Dataset, labeled: Dataset, iteration: int = 1, **kwargs):
+		_, G = self.graph_builder(unlabeled)
+		self.G = G
+		self.uncertainty_scores = self._calc_uncertainties(unlabeled, labeled, **kwargs, model=self.model, G=G)
 
-
-    def update_graph(self, G: nx.Graph):
-        if "nx" in self.criterions_dep:
-            self.criterions_dep["nx"]["graph"] = G
+		weights = None
+		if self.weighted:
+			weights = np.random.beta(1, [1. / iteration, 1. / iteration, iteration], size=(3))
+			weights = weights / weights.sum()
+			
+		final_scores = self.sum_dicts(self.uncertainty_scores, coef=weights)
+		print(final_scores)
+		return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
 
 
-    def select(self, unlabeled: Dataset, labeled: Dataset, iteration: int = 0):
+	def _calc_uncertainties(self, unlabeled, labeled, **kwargs):
+		scores = dict()
 
-        # TODO
-        # CHECK THIS SHIT
-        _, G = self.graph_builder(unlabeled.data)
+		for uncertainty_type, uncertainty in self.uncertainty_dicts.items():
+			if self.__nx_attr(uncertainty_type):
+				scores[uncertainty_type] = uncertainty(kwargs.get('G'))
+				continue
 
-        self.update_graph(G)
+			scores[uncertainty_type] = uncertainty(unlabeled, **kwargs)
+		
+		return scores
+		
+	def sum_dicts(self, scores_dicts, coef=None):
+		if coef is None:
+			coef = [1 / len(scores_dicts)] * len(scores_dicts)
 
-        self.crit_scores = self._calc_crits(unlabeled, labeled)
-
-
-        if self.weighted:
-            # TODO
-            # add weighting logic here
-            pass
-        else:
-            weights = len(self.crit_dicts) * [1]
-
-        return self.crit_scores
-        final_scores = self.sum_dicts(*self.crit_scores, coef=weights)
-        return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
-
-
-    def _calc_crits(self, unlabeled, labeled):
-        crit_scores = dict()
-
-        # TODO
-        # Decided later 
-        X = torch.tensor([[1, 1, 1], [2, 2, 2], [0, 1, 0]], dtype=torch.float16)
-
-        for crit, (func_crit, func_dep) in self.crit_dicts.items():
-            # for every criterion provide it with the data and its dependancies and then calculate it and store it
-            crit_scores[crit] = func_crit(X, **func_dep)
-        
-        return crit_scores
-        
-    def sum_dicts(self, *dicts, coef=None):
-        if coef is None:
-            coef = [1 / len(dicts)] * len(dicts)
-
-        s = {}
-        for k in dicts[0].keys():
-            # s[k] = a[k] + b.get(k, 0)
-            s[k] = sum([coef[i] * e.get(k, 0) for i, e in enumerate(dicts)])
-        return s
+		s = {}
+		for i, sub_scores in enumerate(scores_dicts.values()):
+			for idx, score in sub_scores.items():
+				s[idx] = s.get(idx, 0) + coef[i] * score
+		return s

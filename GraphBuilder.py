@@ -5,8 +5,8 @@ from torch_geometric.utils import to_networkx
 
 
 class GraphBuilder:
-    def __init__(self, metric: str, threshold: float = 0.8):
-        self.similarity = Similarity(metric)
+    def __init__(self, similarity_metric: str, threshold: float = 0.8):
+        self.similarity = Similarity(similarity_metric)
         self.threshold = threshold
 
         self.graph, self.nx_graph = None, None
