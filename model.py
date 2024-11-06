@@ -3,25 +3,38 @@ from torch import nn, optim
 class Model:
 	def __init__(self, model, **kwargs):
 		self.model = model
+		self.nn_flag = isinstance(self.model, nn.Module)
+		self.lr = kwargs.get('lr', .001)
 
 	def fit(self, X, y):
 
-		if not isinstance(self.model, nn.Module):
-			return
+		if not self.nn_flag:
+			self.model = self.model.fit(X, y)
 
 		criterion = nn.CrossEntropyLoss()
-		optimizer = optim.Adam(self.model.parameters(), lr=lr)
+		optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
 
-		x = self.embed_gnn(gnn_model)
-		o = gnn_model.predict(x)
-		loss = criterion(o, self.D_labels[self.gnn_labeled_index])
+		o = self.predict(X)
+		loss = criterion(o, y)
 
 		optimizer.zero_grad()
 		loss.backward()
 		optimizer.step()		
 
-		model = self.classifier_class()
-		model = model.fit(self.train_samples, self.train_labels)
+	def __call__(self, X):
+		if self.nn_flag:
+			return self.model(X)
 		
-		return model, gnn_model
+		return self.model.predict_proba(X)
+	
+	def predict(self, X):
+		if self.nn_flag:
+			return self.model(X).argmax(dim=-1)
+		
+		return self.model.predict(X)
+	
+
+
+
+
 		
