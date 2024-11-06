@@ -26,7 +26,7 @@ class SelectionCriterion:
         else:
             weights = len(self.crit_dicts) * [1]
 
-        final_scores = self.sum_dicts(self.crit_dicts, coef=weights)
+        final_scores = self.sum_dicts(*self.crit_dicts, coef=weights)
         return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
 
 
