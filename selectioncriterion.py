@@ -38,7 +38,7 @@ class SelectionCriterion:
             # if self.__nx_func(crit):
             #     self.crit_dicts[crit] = {crit: (Uncertainty(crit))
                                              
-            self.crit_dicts[crit] = {crit: (Uncertainty(crit), self.criterions_dep[crit]) if not self.__nx_func(crit) else (Uncertainty(crit), self.criterions_dep["nx"])}
+            self.crit_dicts[crit] = (Uncertainty(crit), self.criterions_dep[crit]) if not self.__nx_func(crit) else (Uncertainty(crit), self.criterions_dep["nx"])
 
     def __nx_func(self, func_str):
         return hasattr(nx, func_str) and callable(eval(f'nx.{func_str}'))
@@ -53,9 +53,9 @@ class SelectionCriterion:
 
         # TODO
         # CHECK THIS SHIT
-        _, G = self.graph_builder(unlabeled, )
+        _, G = self.graph_builder(unlabeled.data)
 
-        self.update_deps(G)
+        self.update_graph(G)
 
         self.crit_scores = self._calc_crits(unlabeled, labeled)
 
@@ -67,6 +67,7 @@ class SelectionCriterion:
         else:
             weights = len(self.crit_dicts) * [1]
 
+        return self.crit_scores
         final_scores = self.sum_dicts(*self.crit_scores, coef=weights)
         return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
 
@@ -76,11 +77,11 @@ class SelectionCriterion:
 
         # TODO
         # Decided later 
-        X = torch.tensor([0])
+        X = torch.tensor([[1, 1, 1], [2, 2, 2], [0, 1, 0]], dtype=torch.float16)
 
         for crit, (func_crit, func_dep) in self.crit_dicts.items():
             # for every criterion provide it with the data and its dependancies and then calculate it and store it
-            crit_scores[crit] = func_crit(X, func_dep)
+            crit_scores[crit] = func_crit(X, **func_dep)
         
         return crit_scores
         

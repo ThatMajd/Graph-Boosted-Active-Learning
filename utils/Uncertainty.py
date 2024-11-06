@@ -51,7 +51,8 @@ class Uncertainty:
 		density_scores = 1 / (1 + density_scores)
 		return dict(zip(range(len(X)), density_scores))
 	
-	def __nx(self, G, **kwargs):
+	def __nx(self, X, **kwargs):
+		G = kwargs.get("graph")
 		return eval(f'nx.{self._type}')(G)
 
 
