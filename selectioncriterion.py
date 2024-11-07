@@ -44,8 +44,9 @@ class SelectionCriterion:
 			weights = weights / weights.sum()
 			
 		final_scores = self.sum_dicts(self.uncertainty_scores, coef=weights)
-		print(final_scores)
-		return sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
+		selected_indices = sorted(final_scores, key=lambda x: final_scores[x], reverse=True)[:self.budget_per_iter]
+		self.G.remove_nodes_from(selected_indices)
+		return selected_indices
 
 
 	def _calc_uncertainties(self, unlabeled, labeled, **kwargs):

@@ -51,18 +51,19 @@ class ActiveLearningPipeline:
 
         self.iterations = iterations
         self.budget_per_iter = budget_per_iter
-        
-        # SelectionCriterion should be a given 1 or more Uncertainty functions that will be used for selecting samples
-        self.selection_criterion = SelectionCriterion(selection_criterion, 
-                                                     budget_per_iter=self.budget_per_iter,
-                                                     weighted=weighted_selection,
-                                                     similarity_metric=graph_building_function,
-                                                     threshold=graph_threshold)
 
         if classifying_model == "LogisticRegression":
             self.cls_model = LogisticRegression()
         else:
-            print("Call Mahmod")
+            self.cls_model = None
+
+        # SelectionCriterion should be a given 1 or more Uncertainty functions that will be used for selecting samples
+        self.selection_criterion = SelectionCriterion(selection_criterion,
+                                                     budget_per_iter=self.budget_per_iter,
+                                                     weighted=weighted_selection,
+                                                     similarity_metric=graph_building_function,
+                                                     threshold=graph_threshold,
+                                                     model=self.cls_model,)
 
     def run_pipeline(self):
         """

@@ -42,7 +42,7 @@ class Uncertainty:
 		model = kwargs.get('model')
 		assert model is not None, 'model should not be None! call help for info.'
 
-		return self._entropy(model.predict_proba(X))
+		return self.__entropy(model.predict_proba(X))
 		# return dict(zip(range(len(X)), entropy(model.predict_proba(X), axis=-1)))
 	
 	def __density_kmean(self, X, *args, **kwargs):

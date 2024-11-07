@@ -243,15 +243,15 @@ class GAL:
 		E_test = torch.tensor(E_test)
 		self.AL_iterations = 1
 
+		A = self.sim_mat(self.available_pool_samples)
+		G, V, E = self.construct_graph(A, self.available_pool_samples)
+
 		for iteration in range(self.iterations):
 			assert len(self.train_samples) < self.train_limit, f'The train set is larger than {self.train_limit} samples'
 			print_str = f'Iteration {iteration + 1}/{self.iterations}'
 			print(print_str)
 			model, gnn_model = self._train_model()
-
-
-			A = self.sim_mat(self.available_pool_samples)
-			G, V, E = self.construct_graph(A, self.available_pool_samples)
+			
 			U_idx = self.select_points(G, V, E, model, gnn_model)
 
 			self.label_update(U_idx)
