@@ -76,7 +76,7 @@ class ActiveLearningPipeline:
             
             new_selected_samples = self.selection_criterion.select(unlabeled=self.available_pool_samples, 
                                                                    labeled=self.train_samples, 
-                                                                   iteration=iteration)
+                                                                   iteration=(iteration + 1))
             
             # new_selected_samples = self._random_sampling()
             

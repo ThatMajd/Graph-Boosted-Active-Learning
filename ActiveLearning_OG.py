@@ -250,9 +250,10 @@ class GAL:
 			model, gnn_model = self._train_model()
 
 
-			A = self.sim_mat(self.train_samples)
+			A = self.sim_mat(self.available_pool_samples)
 			G, V, E = self.construct_graph(A, self.available_pool_samples)
 			U_idx = self.select_points(G, V, E, model, gnn_model)
+
 			self.label_update(U_idx)
 			# L_gnn = self.embed_gnn(gnn_model)
 			gal = GALClassifier(gnn_model, model, Classifier(2 * self.out_dim, self.out_dim))
