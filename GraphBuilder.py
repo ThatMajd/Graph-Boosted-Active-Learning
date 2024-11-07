@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 import networkx as nx
 from utils.Similarity import Similarity
@@ -30,7 +31,7 @@ class GraphBuilder:
 		E = np.vstack(np.where(affine_matrix < self.threshold))
 
 		# Create PyTorch Geometric Data object
-		data = Data(x=X, edge_index=E)
+		data = Data(x=X, edge_index=torch.Tensor(E))
 
 		self.graph = data
 

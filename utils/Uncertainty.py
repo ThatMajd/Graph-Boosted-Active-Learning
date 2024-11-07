@@ -27,7 +27,9 @@ class Uncertainty:
 	def __call__(self, X, **kwargs):
 		if self.__nx_flag:
 			# print(kwargs)
-			return self.__m['nx'](X, **kwargs)
+			# G = kwargs.get('G')
+			# assert G is not None, 'graph G should be passed as an argument!'
+			return self.__m['nx'](X)
 		return self.__m[self._type](X, **kwargs)
 	
 	def __entropy(self, X, **kwargs):

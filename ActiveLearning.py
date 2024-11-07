@@ -10,7 +10,7 @@ class ActiveLearningPipeline:
     def __init__(self,
                  dataset,
                  classifying_model,
-                 selection_criterion,
+                 *selection_criterion,
                  weighted_selection: bool,
                  iterations: int,
                  budget_per_iter: int,
@@ -58,7 +58,7 @@ class ActiveLearningPipeline:
             self.cls_model = None
 
         # SelectionCriterion should be a given 1 or more Uncertainty functions that will be used for selecting samples
-        self.selection_criterion = SelectionCriterion(selection_criterion,
+        self.selection_criterion = SelectionCriterion(*selection_criterion,
                                                      budget_per_iter=self.budget_per_iter,
                                                      weighted=weighted_selection,
                                                      similarity_metric=graph_building_function,

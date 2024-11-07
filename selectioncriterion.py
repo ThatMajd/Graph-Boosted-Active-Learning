@@ -38,7 +38,7 @@ class SelectionCriterion:
 			_, G = self.graph_builder(unlabeled)
 			self.G = G
 		
-		self.uncertainty_scores = self._calc_uncertainties(unlabeled, labeled, **kwargs, model=self.model, G=G)
+		self.uncertainty_scores = self._calc_uncertainties(unlabeled, labeled, **kwargs, model=self.model, G=self.G)
 
 		weights = None
 		if self.weighted:
