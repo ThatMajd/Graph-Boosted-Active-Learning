@@ -66,7 +66,10 @@ class Uncertainty:
 		return dict(zip(range(len(X)), density_scores))
 	
 	def __nx(self, G, **kwargs):
-		return eval(f'nx.{self._type}')(G)
+		ret = eval(f'nx.{self._type}')(G)
+		if not isinstance(ret, dict):
+			ret = dict(zip(range(len(G.nodes)), list(ret)))
+		return ret
 	
 	def help(self):
 		print("""
