@@ -7,7 +7,7 @@ with open('dataset_q1.pkl', 'rb') as f:
 
 al = ActiveLearningPipeline(dataset=dataset, 
                             classifying_model="LogisticRegression", 
-                            selection_criterion="entropy", 
+                            selection_criterion="entropy_e", 
                             weighted_selection=False, 
                             iterations=200, 
                             budget_per_iter=5, 

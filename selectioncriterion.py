@@ -34,8 +34,10 @@ class SelectionCriterion:
 		return hasattr(nx, func) and callable(eval(f'nx.{func}'))
 
 	def select(self, unlabeled: Dataset, labeled: Dataset, iteration: int = 1, **kwargs):
-		_, G = self.graph_builder(unlabeled)
-		self.G = G
+		if not self.G:
+			_, G = self.graph_builder(unlabeled)
+			self.G = G
+		
 		self.uncertainty_scores = self._calc_uncertainties(unlabeled, labeled, **kwargs, model=self.model, G=G)
 
 		weights = None
