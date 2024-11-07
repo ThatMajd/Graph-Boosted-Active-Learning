@@ -1,4 +1,4 @@
-import torch
+import numpy as np
 import networkx as nx
 from utils.Similarity import Similarity
 from torch_geometric.data import Data, Dataset
@@ -27,7 +27,7 @@ class GraphBuilder:
 	def __call__(self, X, y=None):
 		# Compute the similarity (affine) matrix
 		affine_matrix = self.similarity(X)
-		E = torch.vstack(torch.where(affine_matrix < self.threshold))
+		E = np.vstack(np.where(affine_matrix < self.threshold))
 
 		# Create PyTorch Geometric Data object
 		data = Data(x=X, edge_index=E)
