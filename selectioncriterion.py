@@ -35,8 +35,10 @@ class SelectionCriterion:
 
 	def select(self, unlabeled: Dataset, labeled: Dataset, iteration: int = 1, **kwargs):
 		if not self.G:
+			print('constructing graph')
 			_, G = self.graph_builder(unlabeled)
 			self.G = G
+			print('graph constructed')
 		
 		self.uncertainty_scores = self._calc_uncertainties(unlabeled, labeled, **kwargs, model=self.model, G=self.G)
 

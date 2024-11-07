@@ -70,7 +70,8 @@ class Uncertainty:
 	def __nx(self, G, **kwargs):
 		ret = eval(f'nx.{self._type}')(G)
 		if not isinstance(ret, dict):
-			ret = dict(zip(range(len(G.nodes)), list(ret)))
+			ret = dict(ret)
+			# ret = dict(zip(range(len(G.nodes)), list(ret)))
 		return ret
 	
 	def help(self):

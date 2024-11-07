@@ -296,7 +296,7 @@ class GALClassifier:
 		# return self.classifier(x)
 
 
-class ActiveLearningPipeline:
+class AL:
 	def __init__(self,
 				 dataset,
 				 selection_criterion,
@@ -310,6 +310,7 @@ class ActiveLearningPipeline:
 		self.budget_per_iter = budget_per_iter
 		self.train_limit = train_limit
 		self.selection_criterion = selection_criterion
+		self.model = None
 		
 
 	def run_pipeline(self):
@@ -317,6 +318,7 @@ class ActiveLearningPipeline:
 		Run the active learning pipeline
 		"""
 		accuracy_scores = []
+		trained_model = None
 		for iteration in range(self.iterations):
 			if len(self.train_samples) > self.train_limit:
 				raise ValueError(f'The train set is larger than {self.train_limit} samples')
@@ -331,6 +333,7 @@ class ActiveLearningPipeline:
 			accuracy_scores.append(accuracy)
 			print(f'Accuracy: {accuracy}')
 			print('----------------------------------------')
+		self.model = trained_model
 		return accuracy_scores
 
 

@@ -15,7 +15,8 @@ class ActiveLearningPipeline:
                  iterations: int,
                  budget_per_iter: int,
                  graph_building_function: str,
-                 graph_threshold: float):
+                 graph_threshold: float,
+                 **kwargs):
         """
         ActiveLearningPipeline class to manage the process of active learning using a graph-based selection criterion.
         This class facilitates iterative selection of data points based on a similarity-based graph, aiming to improve the 
@@ -63,21 +64,26 @@ class ActiveLearningPipeline:
                                                      weighted=weighted_selection,
                                                      similarity_metric=graph_building_function,
                                                      threshold=graph_threshold,
-                                                     model=self.cls_model,)
+                                                     model=self.cls_model,
+                                                     **kwargs)
+        
+        self.model = None
 
-    def run_pipeline(self):
+    def run_pipeline(self, **kwargs):
         """
         Run the active learning pipeline
         """
         accuracy_scores = []
         iterations_progress = trange(self.iterations)
+        trained_model = None
 
         for iteration in iterations_progress:            
             trained_model = self._train_model()
             
             new_selected_samples = self.selection_criterion.select(unlabeled=self.available_pool_samples, 
                                                                    labeled=self.train_samples, 
-                                                                   iteration=(iteration + 1))
+                                                                   iteration=(iteration + 1),
+                                                                   **kwargs)
             
             # new_selected_samples = self._random_sampling()
             
@@ -86,7 +92,8 @@ class ActiveLearningPipeline:
             accuracy_scores.append(accuracy)
 
             iterations_progress.set_postfix({"Accuracy": accuracy})
-    
+        
+        self.model = trained_model
         return accuracy_scores
     
     def _random_sampling(self):
