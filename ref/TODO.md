@@ -6,3 +6,13 @@
 6. Plot GNN embeddings 
 7. Plot correlation between silhouette of clusters and performance of GAL
 8. Design pipeline (70%)
+
+
+
+
+![Explanation](image.png)
+
+
+
+
+
