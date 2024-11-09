@@ -13,27 +13,43 @@ import pickle
 with open('data/dataset_q1.pkl', 'rb') as f:
 	dataset = pickle.load(f)
 
-dataset['available_pool_samples'] = dataset['available_pool_samples'][:60]
-dataset['available_pool_labels'] = dataset['available_pool_labels'][:60]
+train_size, pool_size, test_size = None, 5_000, 1_000
+
+iterations = 100
+budg_per = 50
+
+dataset['available_pool_samples'] = dataset['available_pool_samples'][:pool_size]
+dataset['available_pool_labels'] = dataset['available_pool_labels'][:pool_size]
+
+dataset["test_samples"] = dataset["test_samples"][:test_size]
+dataset["test_labels"] = dataset["test_labels"][:test_size]
+
 
 al = GAL(dataset=dataset, 
 		 classifier=LogisticRegression(), 
-		 budget_per_iter=5, 
-		 iterations=10,
+		 budget_per_iter=budg_per, 
+		 iterations=iterations,
+		 gnn_epochs=25,
+		 quantile=.1,
 		 AL4GE=True,
-		 threshold=2)
+		 use_gnn=True)
 
-res_gal = al.run(plot=True)
+nx.draw(al.create_train_graph(pytorch=False))
+plt.show()
+
+res_gal = al.run(plot=False)
 
 AL_class = AL(dataset=dataset,
 			  selection_criterion='custom',
-			  iterations=10,
-			  budget_per_iter=5,
-			  train_limit=10000)
+			  iterations=iterations,
+			  budget_per_iter=budg_per,
+			  train_limit=10000,)
 
 res_al = AL_class.run_pipeline()
 
-plt.plot(res_gal, label='res_gal')
+plt.plot(res_gal['aggr'], label='res_gal')
+plt.plot(res_gal['GNN'], label='GNN', alpha=.5)
+plt.plot(res_gal['LR'], label='LR', alpha=.5)
 plt.plot(res_al, label='res_al')
 plt.legend()
 plt.show()
