@@ -36,8 +36,8 @@ class GraphBuilder:
             (Graph, ndarray): graph `G` which is an object of networkx.Graph and its edges `E` in GNN format (2xN).
         """
         A = self.metric(X)
-        if threshold is None:
-            threshold = .1 * A.max()
+        if qunatile is None:
+            qunatile = 0.5
         
         E = self.connect(A, qunatile)
   
