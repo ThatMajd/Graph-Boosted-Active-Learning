@@ -24,7 +24,7 @@ class GraphBuilder:
         threshold = np.quantile(unique_distances, q=qunatile)
         return np.vstack(np.where(A < threshold))
 
-    def build(self, X: np.ndarray, y: np.ndarray = None, threshold: float = None, pytorch=False):
+    def build(self, X: np.ndarray, y: np.ndarray = None, qunatile: float = 0.5, pytorch=False):
         """build graph from tabular data.
 
         Args:
@@ -39,7 +39,7 @@ class GraphBuilder:
         if threshold is None:
             threshold = .1 * A.max()
         
-        E = self.connect(A, threshold)
+        E = self.connect(A, qunatile)
   
         if pytorch:
             return Data(x=torch.tensor(X), y=torch.tensor(y), edge_index=torch.tensor(E))
@@ -50,5 +50,5 @@ class GraphBuilder:
         
         return G
 
-    def __call__(self, X, y, threshold: float = None, pytorch: bool = False):
-        return self.build(X, y, threshold, pytorch=pytorch)
+    def __call__(self, X, y, qunatile: float = 0.5, pytorch: bool = False):
+        return self.build(X, y, qunatile, pytorch=pytorch)
