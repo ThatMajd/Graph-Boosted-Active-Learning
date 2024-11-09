@@ -8,16 +8,20 @@ class GraphBuilder:
     def __init__(self, metric: Similarity):
         self.metric = metric
 
-    def connect(self, A: np.ndarray, threshold: float = 1):
+    def connect(self, A: np.ndarray, qunatile: float = 0.5):
         """Function to get the edges of `N` nodes, based on affinity matrix.
 
         Args:
             A (ndarray): Affinity matrix of size `NxN`, where `N` is the number of nodes.
             threshold (float, optional): nodes with affinity less than the threshold will be connected. Defaults to 1.
+            quantile (float, optional): 
 
         Returns:
             ndarray: indices of connected nodes `2xN`
         """
+        unique_distances = A[np.triu_indices_from(A, k=1)]
+        
+        threshold = np.quantile(unique_distances, q=qunatile)
         return np.vstack(np.where(A < threshold))
 
     def build(self, X: np.ndarray, y: np.ndarray = None, threshold: float = None, pytorch=False):
