@@ -51,9 +51,9 @@ class GAL:
         
         self.use_gnn = kwargs.get("use_gnn", "False")
         if self.use_gnn:
-            input_dim = 3  # Assuming features are in columns of data_x
-            hidden_dim = 16
-            output_dim = 4  # Assuming classification
+            input_dim = kwargs.get("input_dim")
+            hidden_dim = kwargs.get("gnn_hidden")
+            output_dim = kwargs.get("output_dim")
             
             self.epochs = kwargs.get("gnn_epochs", 5)
             self.gnn_model = SimpleGNN(input_dim, hidden_dim, output_dim)
