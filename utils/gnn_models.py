@@ -21,7 +21,7 @@ class SimpleGNN(torch.nn.Module):
 		# Dropout probability
 		self.dropout_prob = dropout_prob
 
-	def forward(self, data):
+	def embed(self, data):
 		x, edge_index = data.x, data.edge_index
 		x = x.float()
 		
@@ -33,7 +33,10 @@ class SimpleGNN(torch.nn.Module):
 		x = self.encoder_conv2(x, edge_index)
 		x = F.relu(x)
 		x = F.dropout(x, p=self.dropout_prob, training=self.training)
-		
+		return x
+
+	def forward(self, data):
+		x = self.embed(data)
 		x = self.decoder(x)
 		return x
 		# return F.softmax(x, dim=1)

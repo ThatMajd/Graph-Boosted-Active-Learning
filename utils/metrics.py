@@ -64,9 +64,21 @@ class Uncertainty:
 			density_scores (dict): a dictionary of the scores such that the keys are the node id and value is the score.
 		"""
 		n_clusters = kwargs.get('n_clusters')
+		gnn = kwargs.get('GNN')
 		if n_clusters is None:
 			n_clusters = self.kwargs.get('n_clusters')
+		if gnn is None:
+			gnn = self.kwargs.get('GNN')
+
 		assert n_clusters is not None, 'n_clusters should be passed as an argument! call help for info.'
+		# assert gnn is not None, 'GNN should be passed as an argument! call help for info.'
+
+		if gnn:
+			X = kwargs.get("GNN_graph")
+			assert X is not None, 'GNN_graph should be passed as an argument!'
+			pool_mask = X.pool_mask
+			X = gnn.embed(X).detach().numpy()
+			X = X[pool_mask]
 
 		kmeans = KMeans(n_clusters=n_clusters).fit(X)
 		density_scores = kmeans.transform(X).min(axis=-1, keepdims=kwargs.get('keepdims', False))

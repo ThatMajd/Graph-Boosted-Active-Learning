@@ -60,26 +60,33 @@ class GAL:
 			self.optimizer = torch.optim.Adam(self.gnn_model.parameters(), lr=0.01)
 			self.criterion = torch.nn.CrossEntropyLoss()
 			
-			self.eval_graph = self.graph_builder(
-				self.test_samples,
-				self.test_labels,
-				self.quantile,
-				pytorch=True
-			)
-			self.train_graph = self.create_train_graph()
+			# self.eval_graph = self.graph_builder(
+			# 	self.test_samples,
+			# 	self.test_labels,
+			# 	self.quantile,
+			# 	pytorch=True
+			# )
 			self.gnn_unlabeled_idx = np.arange(len(self.available_pool_labels))
 			self.gnn_labeled_idx = np.arange(len(self.train_labels))
 			self.init_labeled_size = len(self.train_samples)
+			self.train_graph = self.create_train_graph()
+
 
 	def create_train_graph(self, pytorch=True):
 		train_x, train_y = self.train_samples, self.train_labels
 		pool_x, pool_y = self.available_pool_samples, self.available_pool_labels
+		test_x, test_y = self.test_samples, self.test_labels
 		
-		data_x = np.concatenate([train_x, pool_x])
-		data_y = np.concatenate([train_y, pool_y])
+		data_x = np.concatenate([train_x, pool_x, test_x])
+		data_y = np.concatenate([train_y, pool_y, test_y])
 		
 		# Create a pytorch Graph
 		train_graph = self.graph_builder(data_x, data_y, self.quantile, pytorch=pytorch)
+		
+		pool_mask = np.array([False] * (len(self.train_samples) + len(self.available_pool_samples) + len(self.test_samples)))
+		pool_mask[self.gnn_unlabeled_idx + self.init_labeled_size] = True
+		train_graph.pool_mask = pool_mask
+
 		return train_graph
 
 
@@ -107,10 +114,12 @@ class GAL:
 		return round(np.mean(preds == self.test_labels), 3)
 	
 	def _train_gnn(self):
-		train_mask = np.array([False] * (len(self.train_samples) + len(self.available_pool_samples)))
+		train_mask = np.array([False] * (len(self.train_samples) + len(self.available_pool_samples) + len(self.test_samples)))
+		pool_mask = np.array([False] * (len(self.train_samples) + len(self.available_pool_samples) + len(self.test_samples)))
+
 		train_mask[self.gnn_labeled_idx] = True
-		pool_mask = ~train_mask
-		
+		pool_mask[self.gnn_unlabeled_idx + self.init_labeled_size] = True
+
 		self.train_graph.train_mask = train_mask
 		self.train_graph.pool_mask = pool_mask
 		
@@ -138,23 +147,39 @@ class GAL:
 		return accuracy
 			
 	def _evaluate_gnn(self):
-		G = self.eval_graph
-	
+		test_mask = np.array([False] * (len(self.train_samples) + len(self.available_pool_samples) + len(self.test_samples)))
+		test_mask[-len(self.test_samples)::] = True
+
 		self.gnn_model.eval()
 		
 		with torch.no_grad():
-			out = self.gnn_model(G)
+			out = self.gnn_model(self.train_graph)
+		out = out[test_mask]
 		
 		# Calculate accuracy on test data
 		confs, preds = out.max(dim=1)  # Get the predicted classes
-		correct = preds.eq(G.y).sum().item()
-		accuracy = correct / G.y.size(0)  # Total number of test nodes
+		correct = preds.eq(torch.Tensor(self.test_labels)).sum().item()
+		accuracy = correct / self.test_labels.shape[0]  # Total number of test nodes
 		
 		# print(f"[GNN] - Test Accuracy: {accuracy:.4f}")
 		return out, accuracy
-		
-  
 
+
+		# G = self.eval_graph
+	
+		# self.gnn_model.eval()
+		
+		# with torch.no_grad():
+		# 	out = self.gnn_model(G)
+		
+		# # Calculate accuracy on test data
+		# confs, preds = out.max(dim=1)  # Get the predicted classes
+		# correct = preds.eq(G.y).sum().item()
+		# accuracy = correct / G.y.size(0)  # Total number of test nodes
+		
+		# # print(f"[GNN] - Test Accuracy: {accuracy:.4f}")
+		# return out, accuracy
+		
 	def run(self, **kwargs):
 		accuracy_scores = []
 		if self.use_gnn:
@@ -183,6 +208,8 @@ class GAL:
 													 iter+1, 
 													 n_clusters=n_clusters,
 													 G=nx_G,
+													 GNN=self.gnn_model if self.use_gnn else None,
+													 GNN_graph=self.train_graph if self.use_gnn else None,
 													 model=self.classifier)
 			self.update_indices(selection_indices)
 			# accuracy = self._evaluate_model(self.classifier)
@@ -196,7 +223,7 @@ class GAL:
 				assert cls_out.shape == gnn_out.shape
 				
 				# Aggregartion Function
-				final_preds = cls_out + gnn_out.numpy()
+				final_preds = np.maximum(cls_out, gnn_out.numpy())
 				
 				labels = np.argmax(final_preds, axis=1)
 				

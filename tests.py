@@ -13,10 +13,12 @@ import pickle
 with open('data/dataset_q1.pkl', 'rb') as f:
 	dataset = pickle.load(f)
 
-train_size, pool_size, test_size = None, 5_000, 1_000
+train_size, pool_size, test_size = None, 2_000, 1_000
 
 iterations = 100
-budg_per = 50
+budg_per = 20
+
+# np.random.choice()
 
 dataset['available_pool_samples'] = dataset['available_pool_samples'][:pool_size]
 dataset['available_pool_labels'] = dataset['available_pool_labels'][:pool_size]
@@ -30,12 +32,12 @@ al = GAL(dataset=dataset,
 		 budget_per_iter=budg_per, 
 		 iterations=iterations,
 		 gnn_epochs=25,
-		 quantile=.1,
+		 quantile=.01,
 		 AL4GE=True,
-		 use_gnn=True)
+		 use_gnn=False)
 
-nx.draw(al.create_train_graph(pytorch=False))
-plt.show()
+# nx.draw(al.create_train_graph(pytorch=False))
+# plt.show()
 
 res_gal = al.run(plot=False)
 
@@ -47,9 +49,13 @@ AL_class = AL(dataset=dataset,
 
 res_al = AL_class.run_pipeline()
 
-plt.plot(res_gal['aggr'], label='res_gal')
-plt.plot(res_gal['GNN'], label='GNN', alpha=.5)
-plt.plot(res_gal['LR'], label='LR', alpha=.5)
+if al.use_gnn:
+	plt.plot(res_gal['aggr'], label='res_gal')
+	plt.plot(res_gal['GNN'], label='GNN', alpha=.5)
+	plt.plot(res_gal['LR'], label='LR', alpha=.5)
+else:
+	plt.plot(res_gal, label='res_gal')
+
 plt.plot(res_al, label='res_al')
 plt.legend()
 plt.show()
