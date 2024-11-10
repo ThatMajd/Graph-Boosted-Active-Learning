@@ -13,16 +13,16 @@ sweep_config={
     },
     'parameters': {
         "dataset": {
-            "values": ["iris.pkl"]  # Replace with actual dataset options
+            "values": ["wineQT.pkl"]  # Replace with actual dataset options
         },
         "classifier": {
             "values": ["LogisticRegression"]
         },
         "iterations": {
-            "values": [21]  # Adjust as needed
+            "values": [100]
         },
         "budget_per_iter": {
-            "values": [5]
+            "values": [8]
         },
         "quantile": {
             "values": [0.1, 0.25, 0.5]
