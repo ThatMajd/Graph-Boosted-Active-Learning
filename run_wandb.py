@@ -21,6 +21,9 @@ sweep_config={
         "iterations": {
             "values": [100]
         },
+        "uncertainty_measures": {
+            "values": ["pagerank"]
+        },
         "budget_per_iter": {
             "values": [8]
         },
@@ -34,7 +37,7 @@ sweep_config={
         #     "values": [["measure1", "measure2"], ["measure3"]]  # Replace with actual measures
         # },
         "AL4GE": {
-            "values": [True]
+            "values": [False]
         },
         "n_clusters": {
             "values": [2, 4, 5]

@@ -7,6 +7,10 @@ from sklearn.linear_model import LogisticRegression
 from utils.dataset_wrapper import WrapperDataset
 import argparse
 import wandb
+import torch
+
+np.random.seed(42)
+torch.random.manual_seed(42)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, required=True)
@@ -61,8 +65,12 @@ for criterion in selection_criteria:
  
  
 accuracy_scores_dict = accuracy_scores_dict | res_gal
- 
-wandb.init()
+
+if args.wandb:
+    wandb.init()
+    wandb.log({"uncertainty_measures", args.AL4GE if args.AL4GE else args.uncertainty_measures})
+    wandb.log({k+"_avg": np.mean(accuracy_scores_dict[k]) for k in accuracy_scores_dict.keys()})
+    
 for step in range(args.iterations):
     LOG = {"step": step} | {k: accuracy_scores_dict[k][step] for k in accuracy_scores_dict.keys()} 
     wandb.log(LOG)
