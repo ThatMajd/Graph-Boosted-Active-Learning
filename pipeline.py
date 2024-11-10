@@ -16,7 +16,7 @@ class GAL:
                  dataset,
                  classifier,
                  budget_per_iter: int,
-                 *uncertainty_measures,
+                 uncertainty_measures,
                  **kwargs):
         """_summary_
 
@@ -211,7 +211,7 @@ class GAL:
         n_clusters = kwargs.get('n_clusters', self.n_clusters)
         graph_flag = kwargs.get('plot', False)
 
-        for iteration in iterations_progress:
+        for iter_idx in iterations_progress:
             if len(self.available_pool_labels) == 0:
                 break
             self.classifier.fit(self.train_samples, self.train_labels)
@@ -228,7 +228,7 @@ class GAL:
                 nx.draw(nx_G, pos=pos, with_labels=True)
                 plt.show()
             selection_indices = self.selector.select(self.available_pool_samples,
-                                                     iteration + 1,
+                                                     iter_idx + 1,
                                                      n_clusters=n_clusters,
                                                      G=nx_G,
                                                      GNN=self.gnn_model if self.use_gnn else None,
@@ -259,7 +259,7 @@ class GAL:
                 accuracy_scores['GNN'].append(gnn_test_acc)
                 accuracy_scores['LR'].append(acc_LR)
 
-                LOG = {"GAL_Iteration": iteration, "GAL_Accuracy": accuracy, "GAL_LR test acc": LR_acc, "GNN Train Acc": gnn_train_acc,
+                LOG = {"GAL_Iteration": iter_idx, "GAL_Accuracy": accuracy, "GAL_LR test acc": LR_acc, "GNN Train Acc": gnn_train_acc,
                        "GNN Test Acc": gnn_test_acc}
                 iterations_progress.set_postfix(LOG)
                 
@@ -269,7 +269,7 @@ class GAL:
                 accuracy = self._evaluate_model(self.classifier)
                 accuracy_scores.append(accuracy)
 
-                LOG = {"GAL_Iteration": iter, "GAL_Accuracy": accuracy, "GAL_LR test acc": LR_acc}
+                LOG = {"GAL_Iteration": iter_idx, "GAL_Accuracy": accuracy, "GAL_LR test acc": LR_acc}
                 iterations_progress.set_postfix(LOG)
 
 
