@@ -15,17 +15,24 @@ class GAL:
 				 dataset,
 				 classifier,
 				 budget_per_iter: int,
-				 iterations: int = 10,
-				 quantile: float = 0.5,
-				 sim_metric: str = 'euclidean',
 				 *uncertainty_measures,
 				 **kwargs):
+		"""_summary_
+
+		Args:
+			dataset (_type_): _description_
+			classifier (_type_): _description_
+			budget_per_iter (int): _description_
+			labels (Itrable[int] | int): either the set of labels or the number of labels, if labels is int then the labels are assumed to be range(labels).
+			coef (Itrable[bool | float | int]): the coefficients of the uncertainties, if itrable of bools then it element that's True means that the cofficient the corresponds to this element is increasing beta RV., False means decreasing (Similar to AL4GE).
+		"""
 		
 		self.train_samples, self.train_labels = dataset['train_samples'], dataset['train_labels']
 		self.test_samples, self.test_labels = dataset['test_samples'], dataset['test_labels']
 		self.available_pool_samples, self.available_pool_labels = dataset['available_pool_samples'], dataset['available_pool_labels']
 
-		self.similarity = Similarity(sim_metric)
+		self.sim_metric = kwargs.get('sim_metric', 'euclidean')
+		self.similarity = Similarity(self.sim_metric)
 		self.graph_builder = GraphBuilder(self.similarity)
 
 		if kwargs.get('AL4GE'):
@@ -37,17 +44,19 @@ class GAL:
 			self.nx_flag = True
 			self.selector = Selector(budget_per_iter, self.ucs, AL4GE=True)
 		else:
-			self.ucs = UCAggregator(Uncertainty(e) for e in uncertainty_measures)
+			self.ucs = UCAggregator(*[Uncertainty(e) for e in uncertainty_measures])
 			self.nx_flag = any(e.nx_flag for e in self.ucs.ucs)
-			self.selector = Selector(budget_per_iter, self.ucs)
+			self.selector = Selector(budget_per_iter, self.ucs, coef=kwargs.get('coef'))
 
-		self.iterations = iterations
+		self.iterations = kwargs.get('iterations', 10)
 		self.budget_per_iter = budget_per_iter
 		self.classifier = ModelWrapper(classifier)
 		self.n_clusters = kwargs.get('n_clusters', 2)
-		self.quantile = quantile
+		self.quantile = kwargs.get('quantile', .2)
+
+		self.labels = kwargs.get('labels')
 		
-		assert self.iterations * self.budget_per_iter <= len(dataset["available_pool_labels"]), "Not enough samples in pool"
+		assert self.iterations * self.budget_per_iter <= len(dataset["available_pool_labels"]), f"Not enough samples in pool ({self.iterations * self.budget_per_iter} > {len(dataset['available_pool_labels'])})"
 		
 		self.use_gnn = kwargs.get("use_gnn", False)
 		if self.use_gnn:
@@ -210,7 +219,9 @@ class GAL:
 													 G=nx_G,
 													 GNN=self.gnn_model if self.use_gnn else None,
 													 GNN_graph=self.train_graph if self.use_gnn else None,
-													 model=self.classifier)
+													 model=self.classifier,
+													 coef=kwargs.get('coef'),
+													 labels=kwargs.get('labels', self.labels))
 			self.update_indices(selection_indices)
 			# accuracy = self._evaluate_model(self.classifier)
 			

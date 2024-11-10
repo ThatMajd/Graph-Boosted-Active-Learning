@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 import warnings
 from typing import Iterable
+from collections import Counter
 
 class Similarity:
 	def __init__(self, metric='cosine'):
@@ -29,6 +30,7 @@ class Uncertainty:
 			'entropy': self.__entropy, 
 			'entropy_e': self.__entropy_e, 
 			'density_kmean': self.__density_kmean,
+			'area_variance': self.__area_variance,
 			'nx': self.__nx,
 		}
 		
@@ -36,6 +38,35 @@ class Uncertainty:
 			assert uc_type in self.__m, f'type should be one of the following: {", ".join(self.__m)}'
 		self.uc_type = uc_type
 		self.kwargs = kwargs
+
+	def __area_variance(self, X, **kwargs):
+		labels = kwargs.get('labels')
+		if labels is None:
+			labels = self.kwargs.get('labels')
+		if (labels is not None) and isinstance(labels, int):
+			labels = range(labels)
+		else:
+			warnings.warn("labels was not passed as an argument! each node's entropy will be calculated according to the node's connected labels")
+
+
+		entropy_scores = {}
+		for node in X.nodes:
+			# Get the labels of the neighbors
+			neighbor_labels = [X.nodes[neighbor]['label'] for neighbor in X.neighbors(node) if X.nodes[neighbor]['label'] is not None]
+			if len(neighbor_labels) == 0:
+				entropy_scores[node] = 0
+				continue
+
+			# Count occurrences of each label
+			label_counts = Counter(neighbor_labels)
+			if labels is None:
+				labels = label_counts.keys()
+
+			n_neighbors = sum(label_counts.values())
+
+			ent = -sum((label_counts.get(label, 1e-6) / n_neighbors) * np.log(label_counts.get(label, 1e-6) / n_neighbors) for label in labels)
+			entropy_scores[node] = ent
+		return entropy_scores
 
 	def __entropy(self, X, **kwargs):
 		if any(X.reshape(-1) <= 0):
@@ -126,10 +157,11 @@ class UCAggregator:
 	def __get_r(self, X, **kwargs):
 		__r = {}
 		for uc in self.ucs:
-			if hasattr(uc, 'nx_flag') and uc.nx_flag:
+			if (hasattr(uc, 'nx_flag') and uc.nx_flag) or \
+				(hasattr(uc, 'uc_type') and uc.uc_type == 'area_variance'):
 				G = kwargs.get('G')
-				assert G is not None, 'graph G should be passed as an argument!'
-				__r[uc.uc_type] = uc.calc(G)
+				assert G is not None, 'graph G should be passed as an argument!'					
+				__r[uc.uc_type] = uc.calc(G, **kwargs)
 				continue
 
 			__r[uc.uc_type] = uc.calc(X, **kwargs)
@@ -161,6 +193,9 @@ class UCAggregator:
 	
 	def __call__(self, X, **kwargs):
 		return self.calc(X, **kwargs)
+	
+	def __len__(self):
+		return len(self.ucs)
 
 
 
