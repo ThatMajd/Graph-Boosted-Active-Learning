@@ -132,7 +132,7 @@ class Uncertainty:
 		return self.uc_type
 	
 	def __repr__(self):
-		return self.__repr__()
+		return self.__str__()
 	
 	def help(self):
 		print("""
@@ -204,7 +204,7 @@ class UCAggregator:
 		return len(self.ucs)
 	
 	def __str__(self):
-		return ", ".join(self.ucs)
+		return "UCAggregator(" + ", ".join([str(e) for e in self.ucs]) + ")"
 	
 	def __repr__(self):
 		return self.__str__()

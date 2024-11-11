@@ -13,7 +13,7 @@ sweep_config={
     },
     'parameters': {
         "dataset": {
-            "values": ["wineQT.pkl"]  # Replace with actual dataset options
+            "values": ["lab_dataset.pkl"]  # Replace with actual dataset options
         },
         "classifier": {
             "values": ["LogisticRegression"]
@@ -39,6 +39,15 @@ sweep_config={
         "AL4GE": {
             "values": [False]
         },
+		"uncertainty_measures": {
+			"values": [['entropy_e',
+						'density_kmean',
+						'pagerank',
+						'area_variance',],]
+		},
+		"coef": {
+			"values": [[True, True, False, False], ]
+		},
         "n_clusters": {
             "values": [2, 4, 5]
         },
@@ -48,7 +57,7 @@ sweep_config={
         "gnn_epochs": {
             "values": [5, 15, 25]
         },
-        "gnn_hidden": {
+        "hidden_size": {
             "values": [16, 32, 64]  # Hidden layer sizes for GNN
         },
         'wandb': {

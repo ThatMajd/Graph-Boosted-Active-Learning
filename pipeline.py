@@ -40,17 +40,17 @@ class GAL:
 		self.graph_builder = GraphBuilder(self.similarity)
 
 		if kwargs.get('AL4GE'):
-			self.ucs = UCAggregator(
+			self.uc_aggr = UCAggregator(
 				Uncertainty('entropy_e'),
 				Uncertainty('density_kmean'),
 				Uncertainty('pagerank'),
 			)
 			self.nx_flag = True
-			self.selector = Selector(budget_per_iter, self.ucs, AL4GE=True)
+			self.selector = Selector(budget_per_iter, self.uc_aggr, AL4GE=True)
 		else:
-			self.ucs = UCAggregator(*[Uncertainty(e) for e in uncertainty_measures])
-			self.nx_flag = any(e.nx_flag for e in self.ucs.ucs)
-			self.selector = Selector(budget_per_iter, self.ucs, coef=kwargs.get('coef'))
+			self.uc_aggr = UCAggregator(*[Uncertainty(e) for e in uncertainty_measures])
+			self.nx_flag = any(e.nx_flag for e in self.uc_aggr.ucs)
+			self.selector = Selector(budget_per_iter, self.uc_aggr, coef=kwargs.get('coef'))
 
 		self.iterations = kwargs.get('iterations', 10)
 		self.budget_per_iter = budget_per_iter
@@ -64,9 +64,9 @@ class GAL:
 
 		self.use_gnn = kwargs.get("use_gnn", False)
 		if self.use_gnn:
-			input_dim = kwargs.get("input_dim")
-			hidden_dim = kwargs.get("gnn_hidden")
-			output_dim = kwargs.get("output_dim")
+			input_dim = kwargs.get("input_dim", 3)
+			hidden_dim = kwargs.get("hidden_dim", 16)
+			output_dim = kwargs.get("output_dim", 4)
 
 			self.epochs = kwargs.get("gnn_epochs", 5)
 			self.gnn_model = SimpleGNN(input_dim, hidden_dim, output_dim)
@@ -84,13 +84,11 @@ class GAL:
 			self.init_labeled_size = len(self.train_samples)
 			self.train_graph_include_test = kwargs.get('train_graph_include_test', False)
 			self.train_graph = self.create_train_graph()
-			
-		
-		
 
 	def create_train_graph(self, pytorch=True):
 		train_x, train_y = self.train_samples, self.train_labels
 		pool_x, pool_y = self.available_pool_samples, self.available_pool_labels
+
 		if self.train_graph_include_test:
 			test_x, test_y = self.test_samples, self.test_labels
 
@@ -191,27 +189,12 @@ class GAL:
 		out = out[test_mask]
 
 		# Calculate accuracy on test data
-		confs, preds = out.max(dim=1)  # Get the predicted classes
+		_, preds = out.max(dim=1)  # Get the predicted classes
 		correct = preds.eq(torch.Tensor(self.test_labels)).sum().item()
 		accuracy = correct / self.test_labels.shape[0]  # Total number of test nodes
 
 		# print(f"[GNN] - Test Accuracy: {accuracy:.4f}")
 		return out, accuracy
-
-	# G = self.eval_graph
-
-	# self.gnn_model.eval()
-
-	# with torch.no_grad():
-	# 	out = self.gnn_model(G)
-
-	# # Calculate accuracy on test data
-	# confs, preds = out.max(dim=1)  # Get the predicted classes
-	# correct = preds.eq(G.y).sum().item()
-	# accuracy = correct / G.y.size(0)  # Total number of test nodes
-
-	# # print(f"[GNN] - Test Accuracy: {accuracy:.4f}")
-	# return out, accuracy
 
 	def run(self, **kwargs):
 		"""
