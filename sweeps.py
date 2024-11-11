@@ -6,10 +6,11 @@ command = ['${env}', '${interpreter}', 'main.py', '${args}']
 
 sweep_config = {
 	'method': 'grid',
+	'name': None,
 }
 
 metric = {
-	'name': 'Accuracy',
+	'name': 'aggr',
 	'goal': 'maximize',
 }
 
@@ -59,7 +60,7 @@ parameters = {
 	},
 	'wandb': {
 		'value': 1
-	}
+	},
 }
 
 sweep_config['metric'] = metric
@@ -113,7 +114,9 @@ for dataset_name in datasets:
 		for uc in measure_options:
 			ttt = copy.deepcopy(tt)
 			if len(uc) == 1:
+				ttt['name'] = f'{e}_aggr'
 				ttt['parameters']['coef'] = {'values': [measure_coef]}
+			ttt['name'] = f'{e}_single'
 			ttt['parameters']['uncertainty_measures'] = {'values': uc}
 
 			sweep_configs[i] = ttt
@@ -124,6 +127,7 @@ for dataset_name in datasets:
 		
 		ttt = copy.deepcopy(tt)
 		ttt['parameters']['AL4GE'] = {'values': [True]}
+		ttt['name'] = f'{e}_AL4GE'
 		sweep_configs[i] = ttt
 		i += 1
 		print(dataset_name, use_gnn, 'AL4GE')
