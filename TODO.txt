@@ -1,0 +1,13 @@
+PLAN TO FINISH PLEASE:
+
+sorted by importance!!
+
+1- create 2 synthetic datasets (clustered, unclustered)
+2- Create runs plan 
+    - datasets 5
+    - with & without GNN 2
+    - AL4GE, [pagerank, entropy, clustered_variance], [pagerank, entropy, density, area_variance] 3
+
+    5 * 2 * 3 = 30
+
+3- correlation and seperation
