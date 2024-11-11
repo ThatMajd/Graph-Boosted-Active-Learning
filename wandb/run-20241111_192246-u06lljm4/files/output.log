@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "C:\Users\Saleem\OneDrive - Technion\Data science\semester 8\Lab\Project\main.py", line 73, in <module>
+    wandb.log({"uncertainty_measures", args.AL4GE if args.AL4GE else args.uncertainty_measures})
+  File "C:\Users\Saleem\AppData\Local\Programs\Python\Python312\Lib\site-packages\wandb\sdk\wandb_run.py", line 420, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Saleem\AppData\Local\Programs\Python\Python312\Lib\site-packages\wandb\sdk\wandb_run.py", line 371, in wrapper_fn
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Saleem\AppData\Local\Programs\Python\Python312\Lib\site-packages\wandb\sdk\wandb_run.py", line 361, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Saleem\AppData\Local\Programs\Python\Python312\Lib\site-packages\wandb\sdk\wandb_run.py", line 1838, in log
+    self._log(data=data, step=step, commit=commit)
+  File "C:\Users\Saleem\AppData\Local\Programs\Python\Python312\Lib\site-packages\wandb\sdk\wandb_run.py", line 1597, in _log
+    raise ValueError("wandb.log must be passed a dictionary")
+ValueError: wandb.log must be passed a dictionary

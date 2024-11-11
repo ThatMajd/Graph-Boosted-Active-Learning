@@ -1,0 +1,38 @@
+wandb_version: 1
+
+AL4GE:
+  value: false
+budget_per_iter:
+  value: 8
+classifier:
+  value: LogisticRegression
+coef:
+  value:
+  - true
+  - true
+  - false
+  - false
+dataset:
+  value: lab_dataset_2000.pkl
+gnn_epochs:
+  value: 5
+gnn_hidden:
+  value: 32
+iterations:
+  value: 100
+n_clusters:
+  value: 2
+quantile:
+  value: 0.1
+sim_metric:
+  value: euclidean
+uncertainty_measures:
+  value:
+  - entropy_e
+  - density_kmean
+  - pagerank
+  - area_variance
+use_gnn:
+  value: true
+wandb:
+  value: 1

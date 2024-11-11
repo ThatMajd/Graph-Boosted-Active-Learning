@@ -20,9 +20,12 @@ class GraphBuilder:
             ndarray: indices of connected nodes `2xN`
         """
         unique_distances = A[np.triu_indices_from(A, k=1)]
+        A[np.triu_indices_from(A, k=1)] = float('inf')
         
         threshold = np.quantile(unique_distances, q=qunatile)
-        return np.vstack(np.where(A < threshold))
+        A_true = A < threshold
+        # print(f'{A_true.sum()} edges are created!')
+        return np.vstack(np.where(A_true))
 
     def build(self, X: np.ndarray, y: np.ndarray = None, qunatile: float = 0.5, pytorch=False):
         """build graph from tabular data.

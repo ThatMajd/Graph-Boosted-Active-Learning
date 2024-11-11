@@ -1,0 +1,30 @@
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Current SDK version is 0.16.6
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Configure stats pid to 1672
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Loading settings from C:\Users\Saleem\.config\wandb\settings
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Loading settings from C:\Users\Saleem\OneDrive - Technion\Data science\semester 8\Lab\Project\wandb\settings
+2024-11-11 19:22:46,284 WARNING MainThread:1672 [wandb_setup.py:_flush():76] Unknown environment variable: WANDB_SERVICE
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Loading settings from environment variables: {'entity': 'technionsaleem', 'project': 'LAB', 'sweep_id': 'gnw89j6h', 'root_dir': 'C:\\Users\\Saleem\\OneDrive - Technion\\Data science\\semester 8\\Lab\\Project', 'run_id': 'u06lljm4', 'sweep_param_path': 'C:\\Users\\Saleem\\OneDrive - Technion\\Data science\\semester 8\\Lab\\Project\\wandb\\sweep-gnw89j6h\\config-u06lljm4.yaml'}
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'main.py', 'program_abspath': 'C:\\Users\\Saleem\\OneDrive - Technion\\Data science\\semester 8\\Lab\\Project\\main.py', 'program': 'C:\\Users\\Saleem\\OneDrive - Technion\\Data science\\semester 8\\Lab\\Project\\main.py'}
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_setup.py:_flush():76] Applying login settings: {}
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_init.py:_log_setup():521] Logging user logs to C:\Users\Saleem\OneDrive - Technion\Data science\semester 8\Lab\Project\wandb\run-20241111_192246-u06lljm4\logs\debug.log
+2024-11-11 19:22:46,284 INFO    MainThread:1672 [wandb_init.py:_log_setup():522] Logging internal logs to C:\Users\Saleem\OneDrive - Technion\Data science\semester 8\Lab\Project\wandb\run-20241111_192246-u06lljm4\logs\debug-internal.log
+2024-11-11 19:22:46,288 INFO    MainThread:1672 [wandb_init.py:init():561] calling init triggers
+2024-11-11 19:22:46,288 INFO    MainThread:1672 [wandb_init.py:init():568] wandb.init called with sweep_config: {'AL4GE': False, 'budget_per_iter': 8, 'classifier': 'LogisticRegression', 'coef': [True, True, False, False], 'dataset': 'lab_dataset_2000.pkl', 'gnn_epochs': 5, 'gnn_hidden': 32, 'iterations': 100, 'n_clusters': 2, 'quantile': 0.1, 'sim_metric': 'cosine', 'uncertainty_measures': ['entropy_e', 'density_kmean', 'pagerank', 'area_variance'], 'use_gnn': True, 'wandb': 1}
+config: {}
+2024-11-11 19:22:46,288 INFO    MainThread:1672 [wandb_init.py:init():611] starting backend
+2024-11-11 19:22:46,288 INFO    MainThread:1672 [wandb_init.py:init():615] setting up manager
+2024-11-11 19:22:46,302 INFO    MainThread:1672 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=spawn, using: spawn
+2024-11-11 19:22:46,306 INFO    MainThread:1672 [wandb_init.py:init():623] backend started and connected
+2024-11-11 19:22:46,321 INFO    MainThread:1672 [wandb_run.py:_config_callback():1347] config_cb None None {'AL4GE': False, 'budget_per_iter': 8, 'classifier': 'LogisticRegression', 'coef': [True, True, False, False], 'dataset': 'lab_dataset_2000.pkl', 'gnn_epochs': 5, 'gnn_hidden': 32, 'iterations': 100, 'n_clusters': 2, 'quantile': 0.1, 'sim_metric': 'cosine', 'uncertainty_measures': ['entropy_e', 'density_kmean', 'pagerank', 'area_variance'], 'use_gnn': True, 'wandb': 1}
+2024-11-11 19:22:46,321 INFO    MainThread:1672 [wandb_init.py:init():715] updated telemetry
+2024-11-11 19:22:46,372 INFO    MainThread:1672 [wandb_init.py:init():748] communicating run to backend with 90.0 second timeout
+2024-11-11 19:22:47,256 INFO    MainThread:1672 [wandb_run.py:_on_init():2357] communicating current version
+2024-11-11 19:22:48,102 INFO    MainThread:1672 [wandb_run.py:_on_init():2366] got version response upgrade_message: "wandb version 0.18.6 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2024-11-11 19:22:48,102 INFO    MainThread:1672 [wandb_init.py:init():799] starting run threads in backend
+2024-11-11 19:22:48,628 INFO    MainThread:1672 [wandb_run.py:_console_start():2335] atexit reg
+2024-11-11 19:22:48,628 INFO    MainThread:1672 [wandb_run.py:_redirect():2190] redirect: wrap_raw
+2024-11-11 19:22:48,628 INFO    MainThread:1672 [wandb_run.py:_redirect():2255] Wrapping output streams.
+2024-11-11 19:22:48,628 INFO    MainThread:1672 [wandb_run.py:_redirect():2280] Redirects installed.
+2024-11-11 19:22:48,628 INFO    MainThread:1672 [wandb_init.py:init():842] run started, returning control to user process

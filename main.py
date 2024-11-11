@@ -70,7 +70,7 @@ accuracy_scores_dict = accuracy_scores_dict | res_gal
 
 if args.wandb:
     wandb.init()
-    wandb.log({"uncertainty_measures", args.AL4GE if args.AL4GE else args.uncertainty_measures})
+    wandb.log({"uncertainty_measures": args.AL4GE if args.AL4GE else args.uncertainty_measures})
     wandb.log({k+"_avg": np.mean(accuracy_scores_dict[k]) for k in accuracy_scores_dict.keys()})
     
 for step in range(args.iterations):

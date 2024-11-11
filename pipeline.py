@@ -1,4 +1,5 @@
 from utils.metrics import Similarity, Uncertainty, UCAggregator
+from utils.gnn_models import SimpleGNN, GNN
 from utils.builders import GraphBuilder
 from utils.wrappers import ModelWrapper
 from utils.selection import Selector
@@ -6,7 +7,6 @@ import matplotlib.pyplot as plt
 from tqdm import trange
 import networkx as nx
 import numpy as np
-from utils.gnn_models import SimpleGNN
 import torch
 import wandb
 
@@ -63,26 +63,35 @@ class GAL:
 		assert self.iterations * self.budget_per_iter <= len(dataset["available_pool_labels"]), f"Not enough samples in pool ({self.iterations * self.budget_per_iter} > {len(dataset['available_pool_labels'])})"
 
 		self.use_gnn = kwargs.get("use_gnn", False)
+		self.train_graph_include_test = kwargs.get('train_graph_include_test', False)
 		if self.use_gnn:
 			input_dim = kwargs.get("input_dim", 3)
 			hidden_dim = kwargs.get("hidden_dim", 16)
 			output_dim = kwargs.get("output_dim", 4)
 
 			self.epochs = kwargs.get("gnn_epochs", 5)
-			self.gnn_model = SimpleGNN(input_dim, hidden_dim, output_dim)
+			gnn_type = kwargs.get('gnn_type')
+			if gnn_type == 'GNN':
+				self.gnn_model = GNN(input_dim, hidden_dim, output_dim)
+			else:
+				self.gnn_model = SimpleGNN(input_dim, hidden_dim, output_dim)
+			print(self.gnn_model)
+			
 			self.optimizer = torch.optim.Adam(self.gnn_model.parameters(), lr=0.01)
 			self.criterion = torch.nn.CrossEntropyLoss()
 
-			self.eval_graph = self.graph_builder(
-				self.test_samples,
-				self.test_labels,
-				self.quantile,
-				pytorch=True
-			)
+			self.eval_graph = None
+			if not self.train_graph_include_test:
+				self.eval_graph = self.graph_builder(
+					self.test_samples,
+					self.test_labels,
+					self.quantile,
+					pytorch=True
+				)
+
 			self.gnn_unlabeled_idx = np.arange(len(self.available_pool_labels))
 			self.gnn_labeled_idx = np.arange(len(self.train_labels))
 			self.init_labeled_size = len(self.train_samples)
-			self.train_graph_include_test = kwargs.get('train_graph_include_test', False)
 			self.train_graph = self.create_train_graph()
 
 	def create_train_graph(self, pytorch=True):
@@ -145,9 +154,6 @@ class GAL:
 
 		self.train_graph.train_mask = train_mask
 		self.train_graph.pool_mask = pool_mask
-
-		# optimizer = self.optimizer
-		# criterion = self.criterion
 
 		self.gnn_model.train()
 
