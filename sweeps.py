@@ -92,8 +92,8 @@ sweep_params = {
 	},
 }
 
-use_gnn_options = [True, False]
-measure_options = ['entropy_e', 'density_kmean', 'pagerank', 'area_variance', ['entropy_e', 'density_kmean', 'pagerank', 'area_variance',]]
+use_gnn_options = [True]
+measure_options = [['entropy_e', 'density_kmean', 'pagerank', 'area_variance'], [['entropy_e', 'density_kmean', 'pagerank', 'area_variance',]]]
 measure_coef = [True, False, False, False]
 
 from utils.dataset_wrapper import WrapperDataset
@@ -112,9 +112,9 @@ for dataset_name in datasets:
 
 		for uc in measure_options:
 			ttt = copy.deepcopy(tt)
-			if isinstance(uc, list):
+			if len(uc) == 1:
 				ttt['parameters']['coef'] = {'values': [measure_coef]}
-			ttt['parameters']['uncertainty_measures'] = {'values': [uc]}
+			ttt['parameters']['uncertainty_measures'] = {'values': uc}
 
 			sweep_configs[i] = ttt
 			i += 1
@@ -131,7 +131,8 @@ for dataset_name in datasets:
 		
 
 
-pprint(len(sweep_configs))
+pprint(sweep_configs)
+print(len(sweep_configs))
 
 
 
