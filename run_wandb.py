@@ -49,7 +49,7 @@ parameters = {
 		"values": [[True, True, False, False], ]
 	},
 	"n_clusters": {
-		"values": [2, 4, 5, 6]
+		"values": [2, 3, 4, 5]
 	},
 	"use_gnn": {
 		"values": [True]
