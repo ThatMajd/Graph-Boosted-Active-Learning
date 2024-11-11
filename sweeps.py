@@ -113,16 +113,16 @@ for dataset_name in datasets:
 
 		for uc in measure_options:
 			ttt = copy.deepcopy(tt)
+			ttt['name'] = f'{e}_single'
 			if len(uc) == 1:
 				ttt['name'] = f'{e}_aggr'
 				ttt['parameters']['coef'] = {'values': [measure_coef]}
-			ttt['name'] = f'{e}_single'
 			ttt['parameters']['uncertainty_measures'] = {'values': uc}
 
 			sweep_configs[i] = ttt
 			i += 1
 
-			print(dataset_name, use_gnn, uc)
+			# print(dataset_name, use_gnn, uc)
 
 		
 		ttt = copy.deepcopy(tt)
@@ -130,13 +130,13 @@ for dataset_name in datasets:
 		ttt['name'] = f'{e}_AL4GE'
 		sweep_configs[i] = ttt
 		i += 1
-		print(dataset_name, use_gnn, 'AL4GE')
+		# print(dataset_name, use_gnn, 'AL4GE')
 
 		
 
 
-pprint(sweep_configs)
-print(len(sweep_configs))
+# pprint(sweep_configs)
+# print(len(sweep_configs))
 
 
 
