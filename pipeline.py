@@ -48,7 +48,7 @@ class GAL:
 			self.nx_flag = True
 			self.selector = Selector(budget_per_iter, self.uc_aggr, AL4GE=True)
 		else:
-			self.uc_aggr = UCAggregator(*[Uncertainty(e) for e in uncertainty_measures])
+			self.uc_aggr = UCAggregator(*[Uncertainty(e) for e in uncertainty_measures], coef=kwargs.get('coef'))
 			self.nx_flag = any(e.nx_flag for e in self.uc_aggr.ucs)
 			self.selector = Selector(budget_per_iter, self.uc_aggr, coef=kwargs.get('coef'))
 

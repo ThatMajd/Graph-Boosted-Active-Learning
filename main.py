@@ -18,13 +18,14 @@ parser.add_argument("--classifier", type=str, required=True)
 parser.add_argument("--iterations", type=int, required=True)
 parser.add_argument("--budget_per_iter", type=int)
 parser.add_argument("--quantile", type=float)
-parser.add_argument("--sim_metric", type=str)
-parser.add_argument("--uncertainty_measures", type=iter)
+parser.add_argument("--sim_metric", type=str, default='euclidean')
+parser.add_argument("--uncertainty_measures", type=str, nargs='+')
 parser.add_argument("--AL4GE", type=bool)
 parser.add_argument("--n_clusters", type=int)
 parser.add_argument("--use_gnn", type=bool)
 parser.add_argument("--gnn_epochs", type=int)
 parser.add_argument("--gnn_hidden", type=int, default=16)
+parser.add_argument("--coef", type=list)
 parser.add_argument("--plot", type=bool)
 parser.add_argument("--wandb", type=bool, default=False)
 
@@ -49,6 +50,7 @@ gal = GAL(dataset=dataset,
     output_dim=output_dim,
     plot=args.plot,
     AL4GE=args.AL4GE,
+    coef=args.coef,
     n_clusters=args.n_clusters,)
 
 res_gal = gal.run(plot=False)

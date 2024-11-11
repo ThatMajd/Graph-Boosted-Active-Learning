@@ -15,7 +15,7 @@ class Selector:
 			coef = np.random.beta(1, [1. / iteration, 1. / iteration, iteration], size=(3))
 			coef = coef / coef.sum()
 			kwargs['coef'] = coef
-		elif self.__coef:
+		elif self.__coef and all([isinstance(e, bool) for e in self.__coef]):
 			assert len(self.ucs) == len(self.__coef), 'Number of coefficients should be the same as number of uncertainties!'
 			if kwargs.get('coef') is None:
 				coef_betas = np.array([iteration] * len(self.ucs), dtype=float)
