@@ -128,6 +128,12 @@ class Uncertainty:
 	def __call__(self, X, **kwargs):
 		return self.calc(X, **kwargs)
 	
+	def __str__(self):
+		return self.uc_type
+	
+	def __repr__(self):
+		return self.__repr__()
+	
 	def help(self):
 		print("""
 Args:
@@ -196,6 +202,12 @@ class UCAggregator:
 	
 	def __len__(self):
 		return len(self.ucs)
+	
+	def __str__(self):
+		return ", ".join(self.ucs)
+	
+	def __repr__(self):
+		return self.__str__()
 
 
 
