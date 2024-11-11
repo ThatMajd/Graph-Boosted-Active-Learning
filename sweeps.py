@@ -41,10 +41,10 @@ parameters = {
 		"values": [False]
 	},
 	"uncertainty_measures": {
-		"values": []
+		"values": [None]
 	},
 	"coef": {
-		"values": []
+		"values": [None]
 	},
 	"n_clusters": {
 		"values": [2, 3, 4]
@@ -109,7 +109,7 @@ for dataset_name in datasets:
 
 	for use_gnn in use_gnn_options:
 		tt = copy.deepcopy(t)
-		tt['parameters']['use_gnn'] = {'values': use_gnn}
+		tt['parameters']['use_gnn'] = {'values': [use_gnn]}
 
 		for uc in measure_options:
 			ttt = copy.deepcopy(tt)
@@ -135,8 +135,8 @@ for dataset_name in datasets:
 		
 
 
-# pprint(sweep_configs)
-# print(len(sweep_configs))
+pprint(sweep_configs)
+print(len(sweep_configs))
 
 
 
