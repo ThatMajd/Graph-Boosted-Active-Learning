@@ -35,7 +35,7 @@ class Uncertainty:
 		}
 		
 		if not self.nx_flag:
-			assert uc_type in self.__m, f'type should be one of the following: {", ".join(self.__m)}'
+			assert uc_type in self.__m, f'type should be one of the following: {", ".join(self.__m)}, passed {uc_type}'
 		self.uc_type = uc_type
 		self.kwargs = kwargs
 
@@ -128,6 +128,12 @@ class Uncertainty:
 	def __call__(self, X, **kwargs):
 		return self.calc(X, **kwargs)
 	
+	def __str__(self):
+		return self.uc_type
+	
+	def __repr__(self):
+		return self.__str__()
+	
 	def help(self):
 		print("""
 Args:
@@ -152,7 +158,9 @@ class UCAggregator:
 		assert aggr in self.__aggrs, f'type should be one of the following: {", ".join(self.__aggrs)}'
 
 		self.__aggr = aggr
-		self.coef = kwargs.get('coef', np.ones(len(uncertainties)))
+		self.coef = kwargs.get('coef')
+		if self.coef is None:
+			self.coef = np.ones(len(uncertainties))
 
 	def __get_r(self, X, **kwargs):
 		__r = {}
@@ -176,7 +184,9 @@ class UCAggregator:
 		dicts = list(r.values())
 		index = dicts[0].keys()
 
-		coef = kwargs.get('coef', self.coef)
+		coef = kwargs.get('coef')
+		if coef is None:
+			coef = self.coef
 		self.__check_assert(len(coef), len(dicts))
 
 		scores = map(f, zip(*[c * np.array(list(e.values())) for c, e in zip(coef, dicts)]))
@@ -196,6 +206,12 @@ class UCAggregator:
 	
 	def __len__(self):
 		return len(self.ucs)
+	
+	def __str__(self):
+		return "UCAggregator(" + ", ".join([str(e) for e in self.ucs]) + ")"
+	
+	def __repr__(self):
+		return self.__str__()
 
 
 
