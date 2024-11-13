@@ -69,7 +69,7 @@ sweep_config['command'] = command
 
 
 sweep_configs = {}
-datasets = os.listdir('data') + ['clustered.pkl', 'unclustered.pkl']
+datasets = ["lab_dataset_2000.pkl", "iris.pkl", "wineQT.pkl", "clustered.pkl", "unclustered.pkl"]#os.listdir('data')
 sweep_params = {
 	'iris': {
 		'iterations': 21,
@@ -84,12 +84,12 @@ sweep_params = {
 		'budget_per_iter': 20,
 	},
 	'clustered': {
-		'iterations': 100,
-		'budget_per_iter': 30,
+		'iterations': 50,
+		'budget_per_iter': 10,
 	},
 	'unclustered': {
-		'iterations': 100,
-		'budget_per_iter': 30,
+		'iterations': 50,
+		'budget_per_iter': 10,
 	},
 }
 
@@ -135,8 +135,8 @@ for dataset_name in datasets:
 		
 
 
-pprint(sweep_configs)
-print(len(sweep_configs))
+# pprint(sweep_configs)
+# print(len(sweep_configs))
 
 
 
