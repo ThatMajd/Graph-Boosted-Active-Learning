@@ -96,7 +96,7 @@ for criterion in selection_criteria:
 # 	plt.plot(res_gal['LR'], label='LR', alpha=.5)
 
 for criterion, accuracy_scores in GAL_dict.items():
-	print(f'iris.pkl,{criterion},{criterion == "AL4GE"},{np.mean(accuracy_scores["GNN"]):.3f}')
+	print(f'iris.pkl,{criterion},{criterion == "AL4GE"},{np.mean(accuracy_scores["GNN"]):.3f},{np.mean(accuracy_scores["LR"]):.3f},{np.mean(accuracy_scores["aggr"]):.3f}')
 	# print(criterion, f'{np.mean(accuracy_scores['aggr']):.3f}')
 	plt.plot(accuracy_scores['aggr'], label=criterion)
 

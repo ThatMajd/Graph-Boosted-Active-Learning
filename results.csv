@@ -1,8 +1,9 @@
-dataset,uncertainty_measures,AL4GE,GNN_avg,LR_avg,aggr_avg,custom_avg,random_avg
-iris.pkl,entropy_e,0.883
-iris.pkl,density_kmean,0.852
-iris.pkl,pagerank,0.813
-iris.pkl,area_variance,0.862
-iris.pkl,('entropy_e', 'density_kmean', 'pagerank', 'area_variance'),0.879
-iris.pkl,random,0.867
-iris.pkl,custom,0.868
+dataset,uncertainty_measures,AL4GE,GNN_avg,LR_avg,aggr_avg
+iris.pkl,entropy_e,False,0.883,,,,
+iris.pkl,density_kmean,False,0.852,,,,
+iris.pkl,pagerank,False,0.813,,,,
+iris.pkl,area_variance,False,0.862,,,,
+iris.pkl,"('entropy_e', 'density_kmean', 'pagerank', 'area_variance')",False,0.879,,,,
+iris.pkl,,True,0.878,,,,
+iris.pkl,random,False,0.867,,,,,
+iris.pkl,custom,False,0.868,,,,,
