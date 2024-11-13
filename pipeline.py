@@ -16,7 +16,7 @@ class GAL:
 				 dataset,
 				 classifier,
 				 budget_per_iter: int,
-				 uncertainty_measures,
+				 uncertainty_measures=None,
 				 **kwargs):
 		"""_summary_
 
@@ -251,7 +251,8 @@ class GAL:
 			if self.use_gnn:
 				gnn_out, gnn_test_acc = self._evaluate_gnn()
 
-				assert cls_out.shape == gnn_out.shape
+				# print(f'{cls_out.shape} {gnn_out.shape}')
+				assert cls_out.shape == gnn_out.shape, f'{cls_out.shape} {gnn_out.shape} {gnn_out.shape == cls_out.shape}'
 
 				# Aggregartion Function
 				final_preds = np.maximum(cls_out, gnn_out.numpy())
