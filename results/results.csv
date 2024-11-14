@@ -1,31 +1,41 @@
-dataset,uncertainty_measures,AL4GE,GNN_avg,LR_avg,aggr_avg,custom_avg,random_avg
-iris.pkl,"[""entropy_e"",""density_kmean"",""pagerank"",""area_variance""]",false,0.848,0.878,0.851,0.868,0.832
-iris.pkl,area_variance,false,0.878,0.862,0.883,0.868,0.832
-iris.pkl,pagerank,false,0.833,0.813,0.837,0.868,0.832
-iris.pkl,density_kmean,false,0.854,0.860,0.854,0.868,0.832
-iris.pkl,entropy_e,false,0.860,0.883,0.862,0.868,0.832
-iris.pkl,AL4GE,true,0.862,0.879,0.871,0.868,0.832
-wineQT.pkl,area_variance,false,0.520,0.589,0.521,0.588,0.603
-wineQT.pkl,entropy_e,false,0.519,0.637,0.521,0.588,0.603
-wineQT.pkl,pagerank,false,0.513,0.597,0.514,0.588,0.603
-wineQT.pkl,density_kmean,false,0.511,0.621,0.515,0.588,0.603
-wineQT.pkl,"[entropy_e,density_kmean,pagerank,area_variance]",false,0.502,0.595,0.509,0.588,0.603
-wineQT.pkl,AL4GE,true,0.512,0.594,0.516,0.588,0.603
-lab_dataset_2000.pkl,entropy_e,False,0.508,0.632,0.552,0.669,0.658
-lab_dataset_2000.pkl,density_kmean,False,0.585,0.626,0.601,0.669,0.658
-lab_dataset_2000.pkl,pagerank,False,0.526,0.639,0.579,0.669,0.658
-lab_dataset_2000.pkl,area_variance,False,0.471,0.595,0.539,0.669,0.658
-lab_dataset_2000.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.506,0.607,0.561,0.669,0.658
-lab_dataset_2000.pkl,AL4GE,True,0.524,0.595,0.548,0.669,0.658
-clustered.pkl,entropy_e,False,0.944,0.811,0.944,0.902,0.823
-clustered.pkl,density_kmean,False,0.976,0.909,0.979,0.902,0.823
-clustered.pkl,pagerank,False,0.960,0.876,0.961,0.902,0.823
-clustered.pkl,area_variance,False,0.966,0.889,0.965,0.902,0.823
-clustered.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.956,0.811,0.959,0.902,0.823
-clustered.pkl,AL4GE,True,0.959,0.810,0.961,0.902,0.823
-unclustered.pkl,entropy_e,False,0.568,0.624,0.585,0.625,0.623
-unclustered.pkl,density_kmean,False,0.554,0.633,0.568,0.625,0.623
-unclustered.pkl,pagerank,False,0.557,0.627,0.583,0.625,0.623
-unclustered.pkl,area_variance,False,0.535,0.620,0.553,0.625,0.623
-unclustered.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.530,0.623,0.535,0.625,0.623
-unclustered.pkl,AL4GE,True,0.522,0.618,0.535,0.625,0.623
+dataset,uncertainty_measures,AL4GE,GNN_avg,LR_avg,aggr_avg
+iris.pkl,"[""entropy_e"",""density_kmean"",""pagerank"",""area_variance""]",false,0.848,0.878,0.851
+iris.pkl,area_variance,false,0.878,0.862,0.883
+iris.pkl,pagerank,false,0.833,0.813,0.837
+iris.pkl,density_kmean,false,0.854,0.860,0.854
+iris.pkl,entropy_e,false,0.860,0.883,0.862
+iris.pkl,AL4GE,true,0.862,0.879,0.871
+iris.pkl,custom,false,0.868,0.868,0.868
+iris.pkl,random,false,0.832,0.832,0.832
+wineQT.pkl,area_variance,false,0.520,0.589,0.521
+wineQT.pkl,entropy_e,false,0.519,0.637,0.521
+wineQT.pkl,pagerank,false,0.513,0.597,0.514
+wineQT.pkl,density_kmean,false,0.511,0.621,0.515
+wineQT.pkl,"[entropy_e,density_kmean,pagerank,area_variance]",false,0.502,0.595,0.509
+wineQT.pkl,AL4GE,true,0.512,0.594,0.516
+wineQT.pkl,custom,false,0.588,0.588,0.588
+wineQT.pkl,random,false,0.603,0.603,0.603
+lab_dataset_2000.pkl,entropy_e,False,0.508,0.632,0.552
+lab_dataset_2000.pkl,density_kmean,False,0.585,0.626,0.601
+lab_dataset_2000.pkl,pagerank,False,0.526,0.639,0.579
+lab_dataset_2000.pkl,area_variance,False,0.471,0.595,0.539
+lab_dataset_2000.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.506,0.607,0.561
+lab_dataset_2000.pkl,AL4GE,True,0.524,0.595,0.548
+lab_dataset_2000.pkl,custom,false,0.669,0.669,0.669
+lab_dataset_2000.pkl,random,false,0.658,0.658,0.658
+clustered.pkl,entropy_e,False,0.944,0.811,0.944
+clustered.pkl,density_kmean,False,0.976,0.909,0.979
+clustered.pkl,pagerank,False,0.960,0.876,0.961
+clustered.pkl,area_variance,False,0.966,0.889,0.965
+clustered.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.956,0.811,0.959
+clustered.pkl,AL4GE,True,0.959,0.810,0.961
+clustered.pkl,custom,false,0.902,0.902,0.902
+clustered.pkl,random,false,0.823,0.823,0.823
+unclustered.pkl,entropy_e,False,0.568,0.624,0.585
+unclustered.pkl,density_kmean,False,0.554,0.633,0.568
+unclustered.pkl,pagerank,False,0.557,0.627,0.583
+unclustered.pkl,area_variance,False,0.535,0.620,0.553
+unclustered.pkl,"['entropy_e', 'density_kmean', 'pagerank', 'area_variance']",False,0.530,0.623,0.535
+unclustered.pkl,AL4GE,True,0.522,0.618,0.535
+unclustered.pkl,custom,false,0.625,0.625,0.625
+unclustered.pkl,random,false,0.623,0.623,0.623
