@@ -75,7 +75,7 @@ class GAL:
 				self.gnn_model = GNN(input_dim, hidden_dim, output_dim)
 			else:
 				self.gnn_model = SimpleGNN(input_dim, hidden_dim, output_dim)
-			print(self.gnn_model)
+			# print(self.gnn_model)
 			
 			self.optimizer = torch.optim.Adam(self.gnn_model.parameters(), lr=0.01)
 			self.criterion = torch.nn.CrossEntropyLoss()
