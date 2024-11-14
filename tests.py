@@ -6,6 +6,7 @@ from pipeline import GAL
 import numpy as np
 import wandb
 import os
+import pandas as pd
 os.listdir('data')
 def sample(dataset, train_size=None, pool_size=2_000, test_size=1_000):
 	n_pool = len(dataset['available_pool_samples'])
@@ -20,7 +21,7 @@ def sample(dataset, train_size=None, pool_size=2_000, test_size=1_000):
 	dataset["test_samples"] = dataset["test_samples"][test_sample_idx]
 	dataset["test_labels"] = dataset["test_labels"][test_sample_idx]
 	
-ds_name = 'iris.pkl'
+ds_name = 'clustered.pkl'
 data_object = WrapperDataset(ds_name)
 dataset = data_object.dataset
 # sample(dataset)
@@ -31,9 +32,9 @@ labels = output_dim
 dataset['available_pool_labels'].shape
 iterations = 21
 budg_per = 5
-gnn_epochs = 5
-quantile = .01
-hidden_dim = 64
+gnn_epochs = 15
+quantile = .1
+hidden_dim = 32
 use_gnn = True
 entropies = ['entropy_e',
 			 'density_kmean',
@@ -89,24 +90,31 @@ for criterion in selection_criteria:
 			   train_limit=int(1e6))
 	accuracy_scores_dict[criterion] = AL_class.run_pipeline()
 
-# GAL_dict['entropy_e']
-# plt.plot(res_gal['aggr'], label='GAL')
-# if al.use_gnn:
-# 	plt.plot(res_gal['GNN'], label='GNN', alpha=.5)
-# 	plt.plot(res_gal['LR'], label='LR', alpha=.5)
 
+rows = []
+
+# Loop over GAL_dict to extract values
 for criterion, accuracy_scores in GAL_dict.items():
-	print(f'iris.pkl,{criterion},{criterion == "AL4GE"},{np.mean(accuracy_scores["GNN"]):.3f},{np.mean(accuracy_scores["LR"]):.3f},{np.mean(accuracy_scores["aggr"]):.3f}')
-	# print(criterion, f'{np.mean(accuracy_scores['aggr']):.3f}')
-	plt.plot(accuracy_scores['aggr'], label=criterion)
+    row = {
+        'dataset': ds_name,
+        'criterion': criterion,
+        'is_AL4GE': criterion == 'AL4GE',
+        'GNN_avg': np.mean(accuracy_scores['GNN']),
+        'LR_avg': np.mean(accuracy_scores['LR']),
+        'aggr_avg': np.mean(accuracy_scores['aggr'])
+    }
+    rows.append(row)
 
+# Loop over accuracy_scores_dict to extract values
 for criterion, accuracy_scores in accuracy_scores_dict.items():
-	print(f'iris.pkl,{criterion},{criterion == "AL4GE"},{np.mean(accuracy_scores):.3f}')
-	plt.plot(accuracy_scores, label=criterion)
-	# plt.plot(range(1, len(accuracy_scores) + 1), accuracy_scores, label=criterion)
+    row = {
+        'dataset': ds_name,
+        'criterion': criterion,
+        'is_AL4GE': criterion == 'AL4GE',
+        'random_avg': np.mean(accuracy_scores)
+    }
+    rows.append(row)
 
-plt.xlabel('Iterations')
-plt.ylabel('Accuracy')
-# plt.xticks(range(1, len(accuracy_scores) + 1))
-plt.legend()
-plt.show()
+# Convert to DataFrame and display
+results_df = pd.DataFrame(rows)
+print(results_df)
