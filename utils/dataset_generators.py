@@ -1,6 +1,6 @@
 import numpy as np
 
-
+# Code used to generate datasets
 def gen(cent, vars, ns, dim=2, shuffle_flag=False):
 	ds = None
 	gs = None

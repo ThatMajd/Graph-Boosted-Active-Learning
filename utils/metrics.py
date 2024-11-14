@@ -8,6 +8,7 @@ from typing import Iterable
 from collections import Counter
 
 class Similarity:
+	# Abstract class used to calculate distances between nodes either using euclidean or cosine distance
 	def __init__(self, metric='cosine'):
 		__m = ('cosine', 'euclidean')
 		assert metric in __m, f'metric should be one of the following: {", ".join(__m)}'
@@ -33,7 +34,7 @@ class Uncertainty:
 			'area_variance': self.__area_variance,
 			'nx': self.__nx,
 		}
-		
+		# Flag to know if the Uncertainty is a nx function like pagerank
 		if not self.nx_flag:
 			assert uc_type in self.__m, f'type should be one of the following: {", ".join(self.__m)}, passed {uc_type}'
 		self.uc_type = uc_type
@@ -149,6 +150,7 @@ Returns:
 
 
 class UCAggregator:
+    # Aggregates multiple uncertainties and sums them either by with the same weight or the weights defined in the paper
 	def __init__(self, *uncertainties: Iterable[Uncertainty], aggr: str ='sum', **kwargs):
 		self.ucs = uncertainties
 
@@ -162,6 +164,7 @@ class UCAggregator:
 		if self.coef is None:
 			self.coef = np.ones(len(uncertainties))
 
+	# Create dict for all uncertainties like so {Uncertainty: {node_idx: uncertainty_value}}
 	def __get_r(self, X, **kwargs):
 		__r = {}
 		for uc in self.ucs:

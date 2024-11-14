@@ -2,6 +2,10 @@ import os
 from pprint import pprint
 import copy
 
+"""
+File used to create the different configurations or 'sweeps'
+"""
+
 command = ['${env}', '${interpreter}', 'main.py', '${args}']
 
 sweep_config = {

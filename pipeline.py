@@ -95,6 +95,7 @@ class GAL:
 			self.train_graph = self.create_train_graph()
 
 	def create_train_graph(self, pytorch=True):
+		"""Creates the train graph while includes train and unlabeled data, by default creates a pytorch graph but can create networkx graph"""
 		train_x, train_y = self.train_samples, self.train_labels
 		pool_x, pool_y = self.available_pool_samples, self.available_pool_labels
 
@@ -118,6 +119,10 @@ class GAL:
 		return train_graph
 
 	def update_indices(self, selection_indices):
+		"""
+		updates the unlabeled and train indicies based on a list of indicies
+		:param selection_indices: the indicies to update
+  		"""
 		if self.use_gnn:
 			self.gnn_labeled_idx = np.concatenate(
 				(self.gnn_labeled_idx, [self.gnn_unlabeled_idx[e] + self.init_labeled_size for e in selection_indices]))
@@ -143,6 +148,7 @@ class GAL:
 		return round(np.mean(preds == self.test_labels), 3)
 
 	def _train_gnn(self):
+		"""Train the GNN model only on training data"""
 		mask_len = len(self.train_samples) + len(self.available_pool_samples) + (len(self.test_samples) if self.train_graph_include_test else 0)
 		train_mask = np.array(
 			[False] * (mask_len))
@@ -177,6 +183,7 @@ class GAL:
 		return accuracy
 
 	def _evaluate_gnn(self):
+		"""Evaluate the gnn model only on testing data"""
 		if self.train_graph_include_test:
 			mask_len = len(self.train_samples) + len(self.available_pool_samples) + len(self.test_samples)
 			eval_graph = self.train_graph
@@ -204,7 +211,7 @@ class GAL:
 
 	def run(self, **kwargs):
 		"""
-
+		Runs the pipeline
 		Returns:
 			accuracy_scores: {'aggr': []} if use_gnn else {'aggr': [], 'LR': [], 'GNN': []}
 		"""
@@ -214,12 +221,14 @@ class GAL:
 
 		iterations_progress = trange(self.iterations)
 
-		n_clusters = kwargs.get('n_clusters', self.n_clusters)
-		graph_flag = kwargs.get('plot', False)
+		n_clusters = kwargs.get('n_clusters', self.n_clusters) # param for density_kmeans
+		graph_flag = kwargs.get('plot', False) # plot graph of results
 
 		for iter_idx in iterations_progress:
 			if len(self.available_pool_labels) == 0:
 				break
+
+			# Train the 2 models
 			self.classifier.fit(self.train_samples, self.train_labels)
 
 			if self.use_gnn:
@@ -229,10 +238,13 @@ class GAL:
 				self.available_pool_samples,
 				self.available_pool_labels,
 				self.quantile)
+   
 			if graph_flag:
 				pos = dict(zip(range(len(self.available_pool_samples)), self.available_pool_samples[:, [0, 1]]))
 				nx.draw(nx_G, pos=pos, with_labels=True)
 				plt.show()
+    
+    		# Select the indicies & update
 			selection_indices = self.selector.select(self.available_pool_samples,
 													 iter_idx + 1,
 													 n_clusters=n_clusters,
@@ -243,8 +255,8 @@ class GAL:
 													 coef=kwargs.get('coef'),
 													 labels=kwargs.get('labels', self.labels))
 			self.update_indices(selection_indices)
-			# accuracy = self._evaluate_model(self.classifier)
 
+			# Evaluation
 			cls_out = self.classifier(self.test_samples)
 			LR_acc = self._evaluate_model(self.classifier)
 
