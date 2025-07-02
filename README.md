@@ -13,6 +13,13 @@
 
 Graph Active Learning (GAL) is an approach that uses Graph Neural Networks (GNNs) to enhance active learning on tabular data. Active Learning (AL) identifies the most valuable data points to label, optimizing model training. Traditional AL methods often rely solely on model predictions, which limits their effectiveness. GAL improves on this by using a GNN to incorporate the underlying structure of the data, enabling a more informed selection of data points for labeling.
 
+## Video Demonstration
+
+
+https://github.com/user-attachments/assets/64783290-b8c8-4bff-9fff-f95781b72447
+
+
+
 ## Files
 - [main.py](main.py): The main file that runs the code
 - [tests.py](tests.py): The pipeline on a provided dataset for all uncertainty measures
